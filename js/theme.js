@@ -92,6 +92,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Initialize cursor glow effect on all pages
     initCursorGlow();
+
+    // Initialize audio feedback for tiles
+    initAudioFeedback();
 });
 
 // =====================================================
@@ -119,8 +122,8 @@ function initCursorGlow() {
         glowX += (mouseX - glowX) * lerpFactor;
         glowY += (mouseY - glowY) * lerpFactor;
 
-        // Use transform for GPU acceleration
-        cursorGlow.style.transform = `translate(${glowX - 200}px, ${glowY - 200}px) translateZ(0)`;
+        // Use transform for GPU acceleration - center the 100px element
+        cursorGlow.style.transform = `translate(${glowX - 50}px, ${glowY - 50}px) translateZ(0)`;
 
         animationId = requestAnimationFrame(animate);
     }
@@ -228,5 +231,151 @@ function initTabGlow() {
             const activeBtn = group.querySelector('.mode-tab-btn.active');
             if (activeBtn) updateLine(activeBtn);
         });
+    });
+}
+
+// =====================================================
+// AUDIO FEEDBACK - Gentle Hover & Click Sounds
+// =====================================================
+function initAudioFeedback() {
+    // Create audio context lazily (for browser autoplay policy)
+    let audioContext = null;
+    let isAudioEnabled = false;
+
+    function getAudioContext() {
+        if (!audioContext) {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            } catch (e) {
+                console.warn('Web Audio API not supported');
+                return null;
+            }
+        }
+        return audioContext;
+    }
+
+    // Enable audio on first user interaction
+    function enableAudio() {
+        const ctx = getAudioContext();
+        if (ctx && ctx.state === 'suspended') {
+            ctx.resume();
+        }
+        isAudioEnabled = true;
+    }
+
+    // Gentle hover sound - soft, high-pitched tick
+    function playHoverSound() {
+        const ctx = getAudioContext();
+        if (!ctx || !isAudioEnabled) return;
+
+        try {
+            const oscillator = ctx.createOscillator();
+            const gainNode = ctx.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(ctx.destination);
+
+            // Very soft, high-pitched tone
+            oscillator.frequency.setValueAtTime(1200, ctx.currentTime);
+            oscillator.type = 'sine';
+
+            // Very quiet and short
+            gainNode.gain.setValueAtTime(0.03, ctx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+
+            oscillator.start(ctx.currentTime);
+            oscillator.stop(ctx.currentTime + 0.08);
+        } catch (e) { /* Silently fail */ }
+    }
+
+    // Click sound - slightly deeper, satisfying click
+    function playClickSound() {
+        const ctx = getAudioContext();
+        if (!ctx || !isAudioEnabled) return;
+
+        try {
+            const oscillator = ctx.createOscillator();
+            const gainNode = ctx.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(ctx.destination);
+
+            // Deeper, more satisfying tone for click
+            oscillator.frequency.setValueAtTime(800, ctx.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.1);
+            oscillator.type = 'sine';
+
+            // Moderate volume, quick decay
+            gainNode.gain.setValueAtTime(0.08, ctx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+
+            oscillator.start(ctx.currentTime);
+            oscillator.stop(ctx.currentTime + 0.15);
+        } catch (e) { /* Silently fail */ }
+    }
+
+    // Enable audio on first click/touch
+    document.addEventListener('click', enableAudio, { once: true });
+    document.addEventListener('touchstart', enableAudio, { once: true });
+
+    // Throttle hover sounds to prevent too many triggers
+    let lastHoverTime = 0;
+    const hoverThrottle = 100; // ms between hover sounds
+
+    // Attach hover listeners to spotlight cards and algorithm cards
+    const interactiveCards = document.querySelectorAll('.spotlight-card, .algorithm-card');
+
+    interactiveCards.forEach(card => {
+        card.addEventListener('mouseenter', () => {
+            const now = Date.now();
+            if (now - lastHoverTime > hoverThrottle) {
+                lastHoverTime = now;
+                playHoverSound();
+            }
+        });
+    });
+
+    // Attach click listeners to algorithm cards (solver navigation)
+    const algorithmCards = document.querySelectorAll('.algorithm-card');
+
+    algorithmCards.forEach(card => {
+        card.addEventListener('click', () => {
+            playClickSound();
+        });
+    });
+
+    // === SOLVER PAGE BUTTONS ===
+    // Target all interactive buttons on solver pages for professional feel
+    const buttonSelectors = [
+        '.back-btn',           // Back to home button
+        '.btn',                // All general buttons (Solve, Random, Clear, etc.)
+        '.mode-tab-btn',       // Mode/tab switching buttons
+        '.header-theme-toggle', // Theme toggle
+        'button'               // Any other buttons
+    ];
+
+    const allButtons = document.querySelectorAll(buttonSelectors.join(', '));
+
+    allButtons.forEach(btn => {
+        // Skip if already has click sound (algorithm cards)
+        if (btn.classList.contains('algorithm-card')) return;
+
+        // Add click sound
+        btn.addEventListener('click', () => {
+            playClickSound();
+        });
+
+        // Add hover sound for important buttons only (not too many)
+        if (btn.classList.contains('back-btn') ||
+            btn.classList.contains('mode-tab-btn') ||
+            btn.classList.contains('large')) {
+            btn.addEventListener('mouseenter', () => {
+                const now = Date.now();
+                if (now - lastHoverTime > hoverThrottle) {
+                    lastHoverTime = now;
+                    playHoverSound();
+                }
+            });
+        }
     });
 }
