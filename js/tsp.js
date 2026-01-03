@@ -199,6 +199,11 @@ function initTSP() {
     document.getElementById("tsp-clear-btn")?.addEventListener("click", () => { matrixContainer.querySelectorAll('input:not([readonly])').forEach(inp => inp.value = 0); vizSection.classList.add("hidden"); });
     buildMatrix();
     solveBtn?.addEventListener("click", () => {
+        const inputs = Array.from(matrixContainer.querySelectorAll('input:not([readonly])'));
+        if (inputs.some(inp => inp.value.trim() === '')) { alert("Please fill in all fields."); return; }
+        if (inputs.every(inp => parseFloat(inp.value) === 0)) { if (!confirm("All distances are zero. Do you want to proceed?")) return; }
+
+
         const size = parseInt(sizeInput.value) || 4;
         const cities = "ABCDEFGHIJ".slice(0, size).split("");
         const startIdx = cities.indexOf(startSelect.value);

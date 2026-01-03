@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Operations Research - Algorithm Visualizers</title>
     <link rel="stylesheet" href="css/styles.css" />
+    <link rel="icon" type="image/png" href="images/logo_darkmode.png">
 </head>
 
 <body>
@@ -132,49 +133,49 @@
         <!-- Algorithm Cards -->
         <section class="algorithms-section" id="algorithms">
             <div class="algorithms-grid">
-                <div class="algorithm-card spotlight-card" onclick="window.location.href='pages/knapsack.html'">
+                <div class="algorithm-card spotlight-card" onclick="navigateTo('pages/knapsack.html')">
                     <span class="card-number">01</span>
                     <h3>Knapsack</h3>
-                    <p>0/1, Bounded & Unbounded variations with dynamic programming visualization</p>
+                    <p>0/1, Bounded, Unbounded problems with DP visualization</p>
                     <span class="card-arrow">→</span>
                 </div>
 
-                <div class="algorithm-card spotlight-card" onclick="window.location.href='pages/transportation.html'">
+                <div class="algorithm-card spotlight-card" onclick="navigateTo('pages/transportation.html')">
                     <span class="card-number">02</span>
                     <h3>Transportation</h3>
-                    <p>NW Corner, Least Cost, VAM methods with MODI optimization</p>
+                    <p>NW Corner, Least Cost, VAM & MODI method solver</p>
                     <span class="card-arrow">→</span>
                 </div>
 
-                <div class="algorithm-card spotlight-card" onclick="window.location.href='pages/assignment.html'">
+                <div class="algorithm-card spotlight-card" onclick="navigateTo('pages/assignment.html')">
                     <span class="card-number">03</span>
                     <h3>Assignment</h3>
                     <p>Hungarian method for optimal worker-task allocation</p>
                     <span class="card-arrow">→</span>
                 </div>
 
-                <div class="algorithm-card spotlight-card" onclick="window.location.href='pages/simplex.html'">
+                <div class="algorithm-card spotlight-card" onclick="navigateTo('pages/simplex.html')">
                     <span class="card-number">04</span>
                     <h3>Simplex</h3>
                     <p>Linear programming with Big-M method & Branch and Bound</p>
                     <span class="card-arrow">→</span>
                 </div>
 
-                <div class="algorithm-card spotlight-card" onclick="window.location.href='pages/shortestpath.html'">
+                <div class="algorithm-card spotlight-card" onclick="navigateTo('pages/shortestpath.html')">
                     <span class="card-number">05</span>
                     <h3>Shortest Path</h3>
                     <p>Dynamic programming & Bellman-Ford algorithms</p>
                     <span class="card-arrow">→</span>
                 </div>
 
-                <div class="algorithm-card spotlight-card" onclick="window.location.href='pages/tsp.html'">
+                <div class="algorithm-card spotlight-card" onclick="navigateTo('pages/tsp.html')">
                     <span class="card-number">06</span>
                     <h3>TSP</h3>
                     <p>Traveling Salesman Problem using DP with bitmask</p>
                     <span class="card-arrow">→</span>
                 </div>
 
-                <div class="algorithm-card spotlight-card" onclick="window.location.href='pages/graphical.html'">
+                <div class="algorithm-card spotlight-card" onclick="navigateTo('pages/graphical.html')">
                     <span class="card-number">07</span>
                     <h3>Graphical</h3>
                     <p>Two-variable LP with visual constraint plotting</p>
@@ -246,7 +247,7 @@
                     This project is designed to help students and professionals understand the mechanics
                     behind the solutions.
                 </p>
-                <a href="https://github.com/hurairamuzammal/operation_research" target="_blank" class="github-link">
+                <a href="https://github.com/hurairamuzammal/Operation_research" target="_blank" class="github-link">
                     <svg height="20" width="20" viewBox="0 0 16 16" fill="currentColor">
                         <path
                             d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z">

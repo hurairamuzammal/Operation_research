@@ -218,6 +218,18 @@ function initKnapsack() {
         });
     }
 
+    // Bind tab buttons to update the hidden select and trigger updateModeUI
+    document.querySelectorAll('.mode-tab-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const mode = e.target.dataset.mode;
+            if (els.modeSelect) {
+                els.modeSelect.value = mode;
+                // Manually trigger the update as programmatic change doesn't fire event
+                updateModeUI();
+            }
+        });
+    });
+
     els.modeSelect?.addEventListener('change', updateModeUI);
     updateModeUI();
 

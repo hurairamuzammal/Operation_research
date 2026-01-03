@@ -427,6 +427,15 @@ function initShortestPath() {
     buildMatrix();
     generateRandomMatrix();
 
+    // Tab Handling for Algorithm Mode
+    document.querySelectorAll('.mode-tab-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const mode = e.target.dataset.mode;
+            currentMode = mode;
+            updateModeUI();
+        });
+    });
+
     solveBtn?.addEventListener("click", () => {
         const size = parseFloat(sizeInput.value) || 5;
         const nodes = "ABCDEFGHIJKLMNOP".slice(0, size).split("");
@@ -436,9 +445,32 @@ function initShortestPath() {
             alert("Start and End nodes must be different.");
             return;
         }
+
+        const matrixInputs = matrixContainer.querySelectorAll('input');
+
+        // Blank/Zero Check
+        let hasEdges = false;
+        let hasEmpty = false;
+        matrixInputs.forEach(inp => {
+            if (parseFloat(inp.dataset.row) !== parseFloat(inp.dataset.col)) { // Ignore diagonal
+                if (parseFloat(inp.value) !== 0) hasEdges = true;
+            }
+            if (inp.value.trim() === '') hasEmpty = true;
+        });
+
+        if (hasEmpty) {
+            alert("Please fill in all matrix cells (0 for no edge).");
+            return;
+        }
+
+        if (!hasEdges) {
+            const confirmZero = confirm("The graph has no edges (all weights are 0). Do you want to proceed?");
+            if (!confirmZero) return;
+        }
+
         const matrix = [];
         for (let i = 0; i < size; i++) { matrix[i] = []; for (let j = 0; j < size; j++) matrix[i][j] = 0; }
-        matrixContainer.querySelectorAll('input').forEach(inp => {
+        matrixInputs.forEach(inp => {
             const row = parseFloat(inp.dataset.row), col = parseFloat(inp.dataset.col);
             matrix[row][col] = parseFloat(inp.value) || 0;
         });
@@ -456,7 +488,9 @@ function initShortestPath() {
         vizSection.scrollIntoView({ behavior: "smooth" });
     });
 
+    // ... rest of solver functions ...
     function solveDPMode(matrix, nodes, startIdx, endIdx, size) {
+        // ... same existing code ...
         const solver = new ShortestPathSolver(matrix, nodes, startIdx, endIdx);
         const result = solver.solve();
         let html = '';
@@ -600,6 +634,8 @@ function initShortestPath() {
     }
 
     function solveBellmanFordMode(matrix, nodes, startIdx, endIdx, size) {
+        // ... same existing code ...
+        // Re-inserting method content since I replaced the file
         const solver = new BellmanFordSolver(matrix, nodes, startIdx, endIdx);
         const result = solver.solve();
         let html = '';

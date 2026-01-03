@@ -344,11 +344,47 @@ function initAssignment() {
     buildMatrix();
     document.getElementById("assign-generate-btn")?.addEventListener("click", () => { matrixContainer.querySelectorAll('input').forEach(inp => inp.value = Math.floor(Math.random() * 50) + 1); });
     document.getElementById("assign-clear-btn")?.addEventListener("click", () => { matrixContainer.querySelectorAll('input').forEach(inp => inp.value = 0); vizSection.classList.add("hidden"); });
+
+
+    // Tab Handling for Assignment Type
+    document.querySelectorAll('.mode-tab-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const mode = e.target.dataset.mode;
+            const select = document.getElementById("assign-type");
+            if (select) select.value = mode;
+        });
+    });
+
     solveBtn?.addEventListener("click", () => {
-        const n = parseInt(sizeInput.value) || 4, isMax = document.getElementById("assign-type").value === "max";
+        const n = parseInt(sizeInput.value) || 4;
+        const matrixInputs = matrixContainer.querySelectorAll('input');
+
+        // Blank/Zero Check
+        let hasNonZero = false;
+        let hasEmpty = false;
+        matrixInputs.forEach(inp => {
+            if (parseFloat(inp.value) !== 0) hasNonZero = true;
+            if (inp.value.trim() === '') hasEmpty = true;
+        });
+
+        if (hasEmpty) {
+            alert("Please fill in all matrix cells.");
+            return;
+        }
+
+        if (!hasNonZero) {
+            // Optional: You might want to allow all zeros, but typically it could mean a mistake. 
+            // The user requested "blank solving check", which usually refers to empty or default state.
+            // If strictly check for empty inputs: done above.
+            // If check for all zeros (unchanged default):
+            const confirmZero = confirm("The matrix contains only zeros. Do you want to proceed?");
+            if (!confirmZero) return;
+        }
+
+        const isMax = document.getElementById("assign-type").value === "max";
         const costs = [];
         for (let i = 0; i < n; i++) costs[i] = Array(n).fill(0);
-        matrixContainer.querySelectorAll('input').forEach(inp => costs[parseInt(inp.dataset.row)][parseInt(inp.dataset.col)] = parseFloat(inp.value) || 0);
+        matrixInputs.forEach(inp => costs[parseInt(inp.dataset.row)][parseInt(inp.dataset.col)] = parseFloat(inp.value) || 0);
         const squareResult = makeSquare(costs);
         const result = hungarianAlgorithmWithSteps(squareResult.matrix, isMax);
         const filteredAssignment = result.assignment.filter(({ row, col }) => !squareResult.dummyRows.includes(row) && !squareResult.dummyCols.includes(col));

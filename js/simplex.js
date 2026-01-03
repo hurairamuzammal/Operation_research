@@ -1862,172 +1862,63 @@ function initSimplex() {
     });
     document.getElementById("simplex-clear-btn")?.addEventListener("click", () => { buildInputs(); vizSection.classList.add("hidden"); });
     buildInputs();
+    // Tab Handling for Algorithm Mode
+    document.querySelectorAll('.mode-tab-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const mode = e.target.dataset.mode;
+            setModeActive(btn);
+            if (mode === 'standard') {
+                currentMode = 'standard';
+                modeDesc.textContent = 'Enter objective function and constraints. Solves using Big M method for ≤, ≥ and = constraints with full tableau display.';
+                standardInputs?.classList.remove('hidden');
+                solveBtn.textContent = 'Solve with Simplex Method';
+            } else if (mode === 'bb') {
+                currentMode = 'bb';
+                modeDesc.textContent = 'Integer Programming: Solves LP relaxation, then branches on fractional values to find optimal integer solution.';
+                standardInputs?.classList.remove('hidden');
+            }
+        });
+    });
+
     const standardInputs = document.getElementById("simplex-standard-inputs");
     const modeStandardBtn = document.getElementById("simplex-mode-standard");
-    const modeBBBtn = document.getElementById("simplex-mode-bb");
+    const modeBBBtn = document.getElementById("simplex-mode-bb"); // ID matched to HTML
+
     const modeDesc = document.getElementById("simplex-mode-desc");
     const maximizeBtn = document.getElementById("simplex-maximize-btn");
     const minimizeBtn = document.getElementById("simplex-minimize-btn");
-    const objectiveLabel = document.getElementById("simplex-objective-label");
-    let currentMode = 'standard';
-    let isMinimization = false;
-    function updateObjectiveLabel() {
-        if (objectiveLabel) {
-            objectiveLabel.textContent = `Objective Function (${isMinimization ? 'Minimize' : 'Maximize'} Z = ...)`;
-        }
-    }
-    maximizeBtn?.addEventListener("click", () => {
-        isMinimization = false;
-        maximizeBtn.classList.replace('secondary', 'primary');
-        minimizeBtn?.classList.replace('primary', 'secondary');
-        updateObjectiveLabel();
-    });
-    minimizeBtn?.addEventListener("click", () => {
-        isMinimization = true;
-        minimizeBtn.classList.replace('secondary', 'primary');
-        maximizeBtn?.classList.replace('primary', 'secondary');
-        updateObjectiveLabel();
-    });
+
     function setModeActive(activeBtn) {
-        [modeStandardBtn, modeBBBtn].forEach(btn => {
-            if (btn) btn.classList.replace('primary', 'secondary');
-        });
-        if (activeBtn) activeBtn.classList.replace('secondary', 'primary');
+        document.querySelectorAll('.mode-tab-btn').forEach(btn => btn.classList.remove('active'));
+        if (activeBtn) activeBtn.classList.add('active');
     }
-    modeStandardBtn?.addEventListener("click", () => {
-        setModeActive(modeStandardBtn);
-        currentMode = 'standard';
-        modeDesc.textContent = 'Enter objective function and constraints. Solves using Big M method for ≤, ≥ and = constraints with full tableau display.';
-        standardInputs?.classList.remove('hidden');
-        solveBtn.textContent = 'Solve with Simplex Method';
-    });
-    modeBBBtn?.addEventListener("click", () => {
-        setModeActive(modeBBBtn);
-        currentMode = 'bb';
-        modeDesc.textContent = 'Integer Programming: Solves LP relaxation, then branches on fractional values to find optimal integer solution.';
-        standardInputs?.classList.remove('hidden');
-    });
+
+    // Event listeners are handled by the generic class listener above, 
+    // but we ensure the hidden logic (if any specific legacy bindings exist) is preserved or generic enough.
+    // The generic tab listener covers the UI updates.
+
+    // Explicitly add listeners for backward compatibility if needed, 
+    // but since we replaced the buttons, the generic listener is sufficient.
+
+    // Solve button logic
     solveBtn?.addEventListener("click", () => {
-        const objInputs = objectiveContainer.querySelectorAll(".obj-coeff");
-        const objective = Array.from(objInputs).map(inp => parseFloat(inp.value) || 0);
-        const conRows = constraintsContainer.querySelectorAll(".constraint-row");
-        const constraints = Array.from(conRows).map(row => {
-            const coeffInputs = row.querySelectorAll(".con-coeff");
-            return { coeffs: Array.from(coeffInputs).map(inp => parseFloat(inp.value) || 0), rhs: parseFloat(row.querySelector(".con-rhs").value) || 0, type: row.querySelector(".con-type").value };
-        });
-        vizSection.classList.remove("hidden");
-        if (currentMode === 'bb') {
-            const bbSolver = new BranchAndBoundSolver(objective, constraints, numVars, isMinimization);
-            const result = bbSolver.solve();
-
-            let html = `<h3 style="margin-bottom:1.5rem">Branch & Bound - Integer Programming</h3>`;
-
-
-            html += `<div class="info-box"><p><strong>Objective:</strong> Max Z = ${formatLinearExpr(objective)}</p>`;
-            html += '<p style="margin-top:0.5rem"><strong>Constraints:</strong></p><ul style="margin-left:1rem">';
-            constraints.forEach(con => {
-                const lhs = formatLinearExpr(con.coeffs);
-                const typeSymbol = con.type === '<=' ? '≤' : con.type === '>=' ? '≥' : '=';
-                html += `<li>${lhs} ${typeSymbol} ${con.rhs}</li>`;
-            });
-            html += '</ul><p style="margin-top:0.5rem;font-style:italic">All x<sub>i</sub> must be integers ≥ 0</p></div>';
-
-
-            html += `<h4 style="margin-top:2rem;margin-bottom:1rem">Branch & Bound Tree Graph</h4>`;
-            html += drawBranchAndBoundTree(result.nodes);
-
-
-            html += `<h4 style="margin-top:2rem">Node Details</h4>`;
-            html += '<p style="color:var(--text-dim);margin-bottom:1rem">Total Nodes Explored: ' + result.nodes.length + '</p>';
-
-            result.nodes.forEach((node, idx) => {
-                const isRoot = node.parentId === null;
-                const isOptimal = node.isIntegerSolution;
-                const isPruned = !!node.pruneReason;
-                let borderColor = 'var(--bg-tertiary)';
-                let bgColor = 'var(--bg-secondary)';
-
-                if (isOptimal) { borderColor = 'var(--accent-color)'; bgColor = 'rgba(46,139,87,0.15)'; }
-                else if (isPruned) { borderColor = '#cc6666'; bgColor = 'rgba(200,100,100,0.1)'; }
-
-                const indent = node.depth * 20;
-
-
-                html += `<div style="margin-bottom:2rem;background:${bgColor};border:1px solid ${borderColor};border-radius:8px;padding:1.5rem;box-shadow:0 4px 6px rgba(0,0,0,0.1)">`;
-
-
-                html += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;border-bottom:1px solid ${borderColor};padding-bottom:0.5rem">`;
-                html += `<span><strong style="font-size:1.1rem">Node ${node.id}</strong>${isRoot ? ' (Root)' : ''}</span>`;
-                if (node.parentId !== null) html += `<span style="font-size:0.9rem;color:var(--text-muted)">Parent: Node ${node.parentId} | Added: ${node.addedConstraint}</span>`;
-                html += `</div>`;
-
-
-                if (node.lpSolution && node.lpSolution.vars.length > 0) {
-                    html += `<div style="margin-bottom:1rem;display:flex;gap:1.5rem;flex-wrap:wrap;align-items:center">`;
-                    html += `<span><strong>Z = ${formatNumber(node.lpZ)}</strong></span>`;
-                    node.lpSolution.vars.forEach(v => {
-                        const isFrac = v.value - Math.floor(v.value) > 0.001 && v.value - Math.floor(v.value) < 0.999;
-                        html += `<span style="${isFrac ? 'color:orange;font-weight:bold' : ''}">${v.name} = ${formatNumber(v.value)}</span>`;
-                    });
-                    html += `</div>`;
-                }
-
-                if (node.isIntegerSolution) {
-                    html += `<div style="margin-bottom:1rem;color:var(--accent-color);font-weight:bold;display:flex;align-items:center;gap:0.5rem">✓ Feasible Integer Solution Found</div>`;
-                }
-                if (node.pruneReason) {
-                    html += `<div style="margin-bottom:1rem;color:#cc6666;font-weight:bold">⚠ Pruned: ${node.pruneReason}</div>`;
-                }
-
-
-                if (node.solverSteps && node.solverSteps.length > 0) {
-                    const finalStep = node.solverSteps[node.solverSteps.length - 1];
-                    const tableau = finalStep.tableau;
-
-                    html += `<div style="margin-top:1rem">`;
-                    html += `<p style="font-size:0.9rem;color:var(--text-muted);margin-bottom:0.5rem">Final Simplex Tableau (${finalStep.description}):</p>`;
-
-                    html += '<div class="table-wrapper" style="overflow-x:auto"><table><thead><tr>';
-                    html += '<th style="background:var(--bg-tertiary)">Basic</th>';
-                    node.colHeaders.forEach(h => html += `<th style="background:var(--bg-tertiary)">${h.replace(/([xsa])(\d+)/i, '$1<sub>$2</sub>')}</th>`);
-                    html += '</tr></thead><tbody>';
-
-                    tableau.forEach((row, ri) => {
-                        html += `<tr><th style="background:var(--bg-secondary)">${finalStep.rowHeaders[ri].replace(/([xsa])(\d+)/i, '$1<sub>$2</sub>')}</th>`;
-                        row.forEach(val => html += `<td style="text-align:center">${formatBigM(val)}</td>`);
-                        html += `</tr>`;
-                    });
-                    html += '</tbody></table></div>';
-                    html += `</div>`;
-                }
-
-                if (node.branchVar) {
-                    html += `<div style="margin-top:1rem;padding-top:0.5rem;border-top:1px dashed var(--border-color);color:var(--text-primary)">`;
-                    html += `<strong>Branching Action:</strong> Select ${node.branchVar} (${formatNumber(node.branchValue)}) → Create subspaces for ${node.branchVar} ≤ ${Math.floor(node.branchValue)} and ${node.branchVar} ≥ ${Math.ceil(node.branchValue)}`;
-                    html += `</div>`;
-                }
-
-                html += `</div>`;
-            });
-
-
-            if (result.bestSolution) {
-                html += '<div class="info-box success" style="margin-top:2rem"><h3>Optimal Integer Solution</h3>';
-                html += `<p style="font-size:1.5rem;color:var(--accent-color);margin:1rem 0"><strong>Z* = ${formatNumber(result.bestZ)}</strong></p>`;
-                html += '<div style="display:flex;gap:1rem;flex-wrap:wrap">';
-                result.bestSolution.vars.forEach(v => {
-                    html += `<div style="background:rgba(255,255,255,0.1);padding:0.5rem 1rem;border-radius:8px"><strong>${v.name}</strong> = <span style="color:var(--accent-color);font-size:1.2rem">${Math.round(v.value)}</span></div>`;
-                });
-                html += '</div></div>';
-            } else {
-                html += '<div class="info-box warning" style="margin-top:2rem"><h3>No Integer Solution Found</h3><p>The problem has no feasible integer solution.</p></div>';
-            }
-
-            tableauContainer.innerHTML = html;
-            solutionContainer.innerHTML = '';
-            vizSection.scrollIntoView({ behavior: "smooth" });
+        // Validation for empty inputs
+        const inputs = [
+            ...objectiveContainer.querySelectorAll("input"),
+            ...constraintsContainer.querySelectorAll("input")
+        ];
+        const isEmpty = inputs.some(inp => inp.value.trim() === "");
+        if (isEmpty) {
+            alert("Please fill in all fields.");
             return;
         }
+
+        // Check if all zero
+        const allZero = inputs.every(inp => parseFloat(inp.value) === 0);
+        if (allZero) {
+            if (!confirm("All values are zero. Do you want to proceed?")) return;
+        }
+
         if (currentMode === 'revised') {
             const BIG_M = 1000;
             let slacks = [];

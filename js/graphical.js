@@ -83,6 +83,9 @@
         console.log("solveGraphical started");
 
         try {
+            const inputs = Array.from(document.querySelectorAll('input.con-x, input.con-y, input.con-val, #graph-obj-x, #graph-obj-y'));
+            if (inputs.some(i => i.value.trim() === '')) { alert("Please fill in all fields."); return; }
+
             const objType = document.getElementById('graph-obj-type').value;
             const objX = parseFloat(document.getElementById('graph-obj-x').value) || 0;
             const objY = parseFloat(document.getElementById('graph-obj-y').value) || 0;

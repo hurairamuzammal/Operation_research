@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Transportation - Operation Research</title>
     <link rel="stylesheet" href="../css/styles.css" />
+    <link rel="icon" type="image/png" href="../images/logo_darkmode.png">
 </head>
 
 <body>
@@ -23,11 +24,17 @@
 
     <div class="animated-bg"></div>
     <div class="app-container">
-        <header>
-            <a href="../index.html" style="text-decoration:none;color:inherit">
-                <h1>Operations Research</h1>
+        <header class="nav-header">
+            <a href="../index.html" class="back-btn">
+                <svg viewBox="0 0 24 24">
+                    <path d="M19 12H5M12 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                Back to Home
             </a>
-            <p class="tagline">Transportation Problem</p>
+            <div style="text-align:right">
+                <h1 style="font-size:1.5rem;margin:0">Transportation Problem</h1>
+                <p style="font-size:0.8rem;color:var(--text-dim);margin:0">Operations Research</p>
+            </div>
         </header>
         <section class="glass-panel">
             <div class="section-header">
@@ -61,7 +68,15 @@
                         Method</button>
                     <button id="trans-alloc-manual" class="btn secondary" style="flex:1">Enter Manually</button>
                 </div>
-                <div id="trans-alloc-method-select" style="margin-bottom:1rem">
+
+                <div class="mode-tabs">
+                    <button class="mode-tab-btn" data-mode="nw">Northwest Corner</button>
+                    <button class="mode-tab-btn" data-mode="lcm">Least Cost</button>
+                    <button class="mode-tab-btn active" data-mode="vam">VAM (Vogel's)</button>
+                    <div class="tab-glow-line"></div>
+                </div>
+
+                <div id="trans-alloc-method-select" style="margin-bottom:1rem;display:none">
                     <select id="trans-opt-method">
                         <option value="nw">Northwest Corner Method</option>
                         <option value="lcm">Least Cost Method (LCM)</option>

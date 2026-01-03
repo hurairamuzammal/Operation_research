@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Knapsack - Operation Research</title>
     <link rel="stylesheet" href="../css/styles.css" />
+    <link rel="icon" type="image/png" href="../images/logo_darkmode.png">
 </head>
 
 <body>
@@ -22,12 +23,19 @@
     </button>
 
     <div class="app-container">
-        <header>
-            <a href="../index.html" style="text-decoration:none;color:inherit">
-                <h1>Operations Research</h1>
+        <header class="nav-header">
+            <a href="../index.html" class="back-btn">
+                <svg viewBox="0 0 24 24">
+                    <path d="M19 12H5M12 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                Back to Home
             </a>
-            <p class="tagline">Knapsack Problem</p>
+            <div style="text-align:right">
+                <h1 style="font-size:1.5rem;margin:0">Knapsack Problem</h1>
+                <p style="font-size:0.8rem;color:var(--text-dim);margin:0">Operations Research</p>
+            </div>
         </header>
+
         <section class="glass-panel">
             <div class="section-header">
                 <h2>0/1 Knapsack Problem</h2>
@@ -36,16 +44,26 @@
                     <button id="knapsack-clear-btn" class="btn secondary">Clear</button>
                 </div>
             </div>
-            <div class="form-group">
-                <label>Select Mode</label>
-                <div class="mode-toggle" style="margin-bottom:1rem">
-                    <select id="knapsack-mode" class="input-select">
-                        <option value="01">0/1 Knapsack (Standard)</option>
-                        <option value="bounded">Bounded Knapsack (Quantity Limits)</option>
-                        <option value="unbounded">Unbounded Knapsack (Infinite Qty)</option>
-                    </select>
-                </div>
+
+            <!-- New Tab Header -->
+            <div class="mode-tabs">
+                <button class="mode-tab-btn active" data-mode="01">0/1 Knapsack</button>
+                <button class="mode-tab-btn" data-mode="bounded">Bounded</button>
+                <button class="mode-tab-btn" data-mode="unbounded">Unbounded</button>
+                <div class="tab-glow-line"></div>
             </div>
+
+            <!-- Hidden Select for JS Compatibility (if needed, or assume JS refactor) -->
+            <!-- We will hide the old select but keep it if JS relies on it, 
+                 OR better: we refactor JS to use these buttons. 
+                 Let's check if JS uses 'change' event on the select. 
+                 If so, we'll keep a hidden select or update JS.
+                 For now, I'll update the JS next. -->
+            <select id="knapsack-mode" class="input-select" style="display:none">
+                <option value="01">0/1 Knapsack (Standard)</option>
+                <option value="bounded">Bounded Knapsack (Quantity Limits)</option>
+                <option value="unbounded">Unbounded Knapsack (Infinite Qty)</option>
+            </select>
             <div class="form-group">
                 <label>Knapsack Capacity (W)</label>
                 <input type="number" id="knapsack-capacity" class="capacity-input" value="9" min="1" max="50" />

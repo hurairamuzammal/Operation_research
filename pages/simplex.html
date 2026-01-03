@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Simplex - Operation Research</title>
     <link rel="stylesheet" href="../css/styles.css" />
+    <link rel="icon" type="image/png" href="../images/logo_darkmode.png">
 </head>
 
 <body>
@@ -23,114 +24,136 @@
 
     <div class="animated-bg"></div>
     <div class="app-container">
-        <header>
-            <a href="../index.html" style="text-decoration:none;color:inherit">
-                <h1>Operations Research</h1>
+        <header class="nav-header">
+            <a href="../index.html" class="back-btn">
+                <svg viewBox="0 0 24 24">
+                    <path d="M19 12H5M12 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                Back to Home
             </a>
-            <p class="tagline">Simplex Method</p>
+            <div style="text-align:right">
+                <h1 style="font-size:1.5rem;margin:0">Simplex Method</h1>
+                <p style="font-size:0.8rem;color:var(--text-dim);margin:0">Operations Research</p>
+            </div>
         </header>
+
         <section class="glass-panel">
             <div class="section-header">
-                <h2>Simplex Method (Linear Programming)</h2>
+                <h2>Simplex Solver</h2>
                 <div class="btn-group">
-                    <button id="simplex-generate-btn" class="btn secondary">Random</button>
-                    <button id="simplex-clear-btn" class="btn secondary">Clear</button>
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Select Mode</label>
-                <div class="mode-toggle" style="display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap">
-                    <button id="simplex-mode-standard" class="btn primary" style="flex:1">Standard Simplex</button>
-                    <button id="simplex-mode-bb" class="btn secondary" style="flex:1">Branch &amp; Bound
-                        (Integer)</button>
-                </div>
-                <p id="simplex-mode-desc" style="font-size:0.85rem;color:var(--text-dim)">Enter objective function and
-                    constraints. Solves using Big M method with tableau.</p>
-            </div>
-            <div id="simplex-standard-inputs">
-                <div class="form-group">
-                    <label>Objective Type</label>
-                    <div class="mode-toggle" style="display:flex;gap:0.5rem;margin-bottom:1rem">
-                        <button id="simplex-maximize-btn" class="btn primary" style="flex:1">Maximize</button>
-                        <button id="simplex-minimize-btn" class="btn secondary" style="flex:1">Minimize</button>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label id="simplex-objective-label">Objective Function (Maximize Z = ...)</label>
-                    <div id="simplex-objective"></div>
-                    <div class="item-controls" style="margin-top:0.5rem">
-                        <button id="simplex-add-var" class="btn small">+ Add Variable</button>
-                        <button id="simplex-remove-var" class="btn small">- Remove Variable</button>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Constraints</label>
-                    <div id="simplex-constraints"></div>
-                    <div class="item-controls" style="margin-top:0.5rem">
-                        <button id="simplex-add-con" class="btn small">+ Add Constraint</button>
-                        <button id="simplex-remove-con" class="btn small">- Remove Constraint</button>
-                    </div>
-                    <p style="margin-top:0.5rem;color:var(--text-muted);font-style:italic">x<sub>1</sub>, x<sub>2</sub>,
-                        ... ≥ 0</p>
-                </div>
-                <div class="action-bar">
-                    <button id="simplex-solve-btn" class="btn primary large">Solve with Simplex Method</button>
+                    <button id="simplex-auto-fill-btn" class="btn secondary">Auto Fill</button>
+                    <button id="simplex-clear-btn" class="btn secondary small">Clear</button>
                 </div>
             </div>
 
-            <!-- Educational Notes -->
-            <div class="edu-notes-container">
-                <button class="edu-notes-toggle"
-                    onclick="this.classList.toggle('open'); this.nextElementSibling.classList.toggle('open');">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M6 9l6 6 6-6" />
-                    </svg>
-                    <span>Educational Notes</span>
-                </button>
-                <div class="edu-notes-content">
-                    <h4>Understanding the Simplex Method</h4>
-                    <p>The Simplex algorithm solves linear programming problems by moving along the edges of the
-                        feasible region to find the optimal vertex.</p>
-                    <h5>Standard Form Requirements</h5>
-                    <ul>
-                        <li>All constraints must be equations (use slack/surplus variables)</li>
-                        <li>All variables must be non-negative</li>
-                        <li>RHS values should be non-negative</li>
-                    </ul>
-                    <h5>Simplex Tableau Operations</h5>
-                    <div class="edu-formula">
-                        1. Choose entering variable: Most negative coefficient in Z-row (max)<br>
-                        2. Choose leaving variable: Minimum ratio test (RHS / pivot column)<br>
-                        3. Pivot: Make pivot element = 1, all other column entries = 0
+            <!-- New Tab Header for Algorithm Mode -->
+            <div class="mode-tabs">
+                <button class="mode-tab-btn active" data-mode="standard" id="simplex-mode-standard">Standard
+                    Simplex</button>
+                <button class="mode-tab-btn" data-mode="bb" id="simplex-mode-bb">Branch & Bound (Integer)</button>
+                <div class="tab-glow-line"></div>
+            </div>
+
+            <div class="form-group">
+                <div class="mode-toggle" style="display:none"> <!-- Hidden for JS compatibility -->
+                    <button id="simplex-mode-standard-hidden" class="btn primary" style="flex:1">Standard
+                        Simplex</button>
+                    <button id="simplex-mode-bb-hidden" class="btn secondary" style="flex:1">Branch & Bound</button>
+                </div>
+
+                <div class="dimension-inputs">
+                    <div class="input-wrapper">
+                        <label>Variables</label>
+                        <input type="number" id="simplex-vars" value="2" min="1" max="6">
                     </div>
-                    <h5>When to Use Big-M Method</h5>
-                    <ul>
-                        <li>When constraints have ≥ or = signs</li>
-                        <li>Artificial variables are added with coefficient M (very large)</li>
-                        <li>Goal: Drive artificial variables out of the basis</li>
-                        <li>If any artificial variable remains positive → Infeasible</li>
-                    </ul>
-                    <h5>Optimality Conditions</h5>
-                    <ul>
-                        <li><strong>Maximization:</strong> Optimal when all Z-row coefficients ≥ 0</li>
-                        <li><strong>Minimization:</strong> Optimal when all Z-row coefficients ≤ 0</li>
-                        <li><strong>Unbounded:</strong> No positive ratio in minimum ratio test</li>
-                    </ul>
-                    <div class="edu-example">
-                        <div class="edu-example-title">Branch and Bound (Integer Solutions)</div>
-                        <p>When integer solutions are required, we solve LP relaxation first, then branch on fractional
-                            variables, bounding with LP solutions to prune the search tree.</p>
+                    <div class="input-wrapper">
+                        <label>Constraints</label>
+                        <input type="number" id="simplex-constraints" value="2" min="1" max="6">
                     </div>
                 </div>
+
+                <div class="mode-toggle" style="margin-top:1rem;display:flex;gap:0.5rem">
+                    <!-- Keep Min/Max as buttons for now as they are secondary to the algo mode -->
+                    <button id="simplex-obj-max" class="btn primary" style="flex:1">Maximization</button>
+                    <button id="simplex-obj-min" class="btn secondary" style="flex:1">Minimization</button>
+                </div>
             </div>
-        </section>
-        <section id="simplex-viz" class="glass-panel hidden">
-            <div class="section-header">
-                <h2>Solution Process</h2>
+            <div class="form-group">
+                <label id="simplex-objective-label">Objective Function (Maximize Z = ...)</label>
+                <div id="simplex-objective"></div>
+                <div class="item-controls" style="margin-top:0.5rem">
+                    <button id="simplex-add-var" class="btn small">+ Add Variable</button>
+                    <button id="simplex-remove-var" class="btn small">- Remove Variable</button>
+                </div>
             </div>
-            <div id="simplex-tableaus"></div>
-            <div id="simplex-solution" style="margin-top:2rem"></div>
-        </section>
+            <div class="form-group">
+                <label>Constraints</label>
+                <div id="simplex-constraints"></div>
+                <div class="item-controls" style="margin-top:0.5rem">
+                    <button id="simplex-add-con" class="btn small">+ Add Constraint</button>
+                    <button id="simplex-remove-con" class="btn small">- Remove Constraint</button>
+                </div>
+                <p style="margin-top:0.5rem;color:var(--text-muted);font-style:italic">x<sub>1</sub>, x<sub>2</sub>,
+                    ... ≥ 0</p>
+            </div>
+            <div class="action-bar">
+                <button id="simplex-solve-btn" class="btn primary large">Solve with Simplex Method</button>
+            </div>
+    </div>
+
+    <!-- Educational Notes -->
+    <div class="edu-notes-container">
+        <button class="edu-notes-toggle"
+            onclick="this.classList.toggle('open'); this.nextElementSibling.classList.toggle('open');">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 9l6 6 6-6" />
+            </svg>
+            <span>Educational Notes</span>
+        </button>
+        <div class="edu-notes-content">
+            <h4>Understanding the Simplex Method</h4>
+            <p>The Simplex algorithm solves linear programming problems by moving along the edges of the
+                feasible region to find the optimal vertex.</p>
+            <h5>Standard Form Requirements</h5>
+            <ul>
+                <li>All constraints must be equations (use slack/surplus variables)</li>
+                <li>All variables must be non-negative</li>
+                <li>RHS values should be non-negative</li>
+            </ul>
+            <h5>Simplex Tableau Operations</h5>
+            <div class="edu-formula">
+                1. Choose entering variable: Most negative coefficient in Z-row (max)<br>
+                2. Choose leaving variable: Minimum ratio test (RHS / pivot column)<br>
+                3. Pivot: Make pivot element = 1, all other column entries = 0
+            </div>
+            <h5>When to Use Big-M Method</h5>
+            <ul>
+                <li>When constraints have ≥ or = signs</li>
+                <li>Artificial variables are added with coefficient M (very large)</li>
+                <li>Goal: Drive artificial variables out of the basis</li>
+                <li>If any artificial variable remains positive → Infeasible</li>
+            </ul>
+            <h5>Optimality Conditions</h5>
+            <ul>
+                <li><strong>Maximization:</strong> Optimal when all Z-row coefficients ≥ 0</li>
+                <li><strong>Minimization:</strong> Optimal when all Z-row coefficients ≤ 0</li>
+                <li><strong>Unbounded:</strong> No positive ratio in minimum ratio test</li>
+            </ul>
+            <div class="edu-example">
+                <div class="edu-example-title">Branch and Bound (Integer Solutions)</div>
+                <p>When integer solutions are required, we solve LP relaxation first, then branch on fractional
+                    variables, bounding with LP solutions to prune the search tree.</p>
+            </div>
+        </div>
+    </div>
+    </section>
+    <section id="simplex-viz" class="glass-panel hidden">
+        <div class="section-header">
+            <h2>Solution Process</h2>
+        </div>
+        <div id="simplex-tableaus"></div>
+        <div id="simplex-solution" style="margin-top:2rem"></div>
+    </section>
     </div>
     <script src="../js/theme.js"></script>
     <script src="../js/simplex.js"></script>

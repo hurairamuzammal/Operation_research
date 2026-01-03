@@ -340,12 +340,28 @@ function initTransportation() {
     const allocMethodBtn = document.getElementById("trans-alloc-use-method");
     const allocManualBtn = document.getElementById("trans-alloc-manual");
     const allocMethodSelect = document.getElementById("trans-alloc-method-select");
+    const modeTabsContainer = document.querySelector(".mode-tabs");
+    const modeTabs = document.querySelectorAll(".mode-tab-btn");
+    const modeSelect = document.getElementById("trans-opt-method");
     const allocManualSection = document.getElementById("trans-alloc-manual-section");
+
+    // Tab Logic
+    if (modeTabs.length > 0 && modeSelect) {
+        modeTabs.forEach(btn => {
+            btn.addEventListener('click', () => {
+                modeTabs.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                modeSelect.value = btn.dataset.mode;
+            });
+        });
+    }
+
     allocMethodBtn?.addEventListener("click", () => {
         allocMode = 'method';
         allocMethodBtn.classList.replace('secondary', 'primary');
         allocManualBtn.classList.replace('primary', 'secondary');
         allocMethodSelect?.classList.remove('hidden');
+        modeTabsContainer?.classList.remove('hidden');
         allocManualSection?.classList.add('hidden');
     });
     allocManualBtn?.addEventListener("click", () => {
@@ -353,6 +369,7 @@ function initTransportation() {
         allocManualBtn.classList.replace('secondary', 'primary');
         allocMethodBtn.classList.replace('primary', 'secondary');
         allocMethodSelect?.classList.add('hidden');
+        modeTabsContainer?.classList.add('hidden');
         allocManualSection?.classList.remove('hidden');
         buildAllocMatrix();
     });
@@ -451,6 +468,11 @@ function initTransportation() {
         return html;
     }
     optimizeBtn?.addEventListener("click", () => {
+        const inputs = Array.from(matrixContainer.querySelectorAll('input'));
+        if (inputs.some(inp => inp.value.trim() === '')) { alert("Please fill in all fields."); return; }
+        if (inputs.every(inp => parseFloat(inp.value) === 0)) { if (!confirm("All values are zero. Do you want to proceed?")) return; }
+
+
         const m = parseInt(sourcesInput.value) || 3, n = parseInt(destsInput.value) || 4;
         const costs = [], supply = Array(m).fill(0), demand = Array(n).fill(0);
         for (let i = 0; i < m; i++) costs[i] = Array(n).fill(0);
