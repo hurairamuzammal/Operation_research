@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Operations Research - Algorithm Visualizers</title>
+    <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body>
+    <!-- Sticky Header -->
+    <nav class="sticky-header">
+        <div class="header-left">
+            <div class="logo-container">
+                <img src="images/logo_darkmode.png" alt="OR Logo" class="site-logo logo-dark">
+                <img src="images/logo_lightmode.png" alt="OR Logo" class="site-logo logo-light" style="display:none">
+            </div>
+            <a href="#" class="header-title">Operations Research</a>
+        </div>
+        <div class="header-right">
+            <ul class="nav-links">
+                <li class="nav-item"><a href="#algorithms">Solvers</a></li>
+                <li class="nav-item"><a href="#about">About</a></li>
+            </ul>
+            <button class="header-theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path
+                        d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z" />
+                </svg>
+            </button>
+        </div>
+    </nav>
+
+    <div class="landing-container">
+        <!-- Hero Section -->
+        <header class="landing-header">
+            <p class="hero-tag">Educational Tool</p>
+            <h1 id="hero-title">Operations Research</h1>
+            <p class="subtitle">Algorithm Visualizers</p>
+            <p class="hero-description">
+                Master optimization algorithms through interactive step-by-step visualizations.
+                Built for students, researchers, and practitioners studying linear programming,
+                dynamic programming, and network optimization.
+            </p>
+        </header>
+
+        <!-- What is OR Section -->
+        <section class="intro-section">
+            <div class="intro-content">
+                <h2 class="section-title">What is Operations Research?</h2>
+                <p class="intro-text">
+                    Operations Research (OR) is the discipline of applying advanced analytical methods
+                    to help make better decisions. Using techniques such as mathematical modeling,
+                    statistical analysis, and optimization, OR practitioners help organizations
+                    solve complex problems and make informed decisions.
+                </p>
+                <div class="intro-stats">
+                    <div class="stat-item">
+                        <span class="stat-number">7</span>
+                        <span class="stat-label">Algorithms</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">15+</span>
+                        <span class="stat-label">Methods</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">∞</span>
+                        <span class="stat-label">Practice Problems</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section with Line Icons -->
+        <section class="features-section">
+            <h2 class="section-title">Key Features</h2>
+
+            <div class="feature-grid">
+                <div class="feature-item spotlight-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                        </svg>
+                    </div>
+                    <h4>Step-by-Step Solutions</h4>
+                    <p>Watch algorithms unfold iteration by iteration with detailed explanations at each step</p>
+                </div>
+
+                <div class="feature-item spotlight-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4v16" />
+                        </svg>
+                    </div>
+                    <h4>Sensitivity Analysis</h4>
+                    <p>Explore how changes in constraints affect optimal solutions in the Simplex solver</p>
+                </div>
+
+                <div class="feature-item spotlight-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="3" y="3" width="7" height="7" />
+                            <rect x="14" y="3" width="7" height="7" />
+                            <rect x="3" y="14" width="7" height="7" />
+                            <rect x="14" y="14" width="7" height="7" />
+                        </svg>
+                    </div>
+                    <h4>Interactive Tables</h4>
+                    <p>Dynamic matrices and tableaux that update in real-time as you solve problems</p>
+                </div>
+
+                <div class="feature-item spotlight-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M12 6v6l4 2" />
+                        </svg>
+                    </div>
+                    <h4>Multiple Methods</h4>
+                    <p>Compare different approaches like NW Corner vs VAM, or DP vs Branch & Bound</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Divider -->
+        <div class="section-divider">
+            <span>Explore Algorithms</span>
+        </div>
+
+        <!-- Algorithm Cards -->
+        <section class="algorithms-section" id="algorithms">
+            <div class="algorithms-grid">
+                <div class="algorithm-card spotlight-card" onclick="window.location.href='pages/knapsack.html'">
+                    <span class="card-number">01</span>
+                    <h3>Knapsack</h3>
+                    <p>0/1, Bounded & Unbounded variations with dynamic programming visualization</p>
+                    <span class="card-arrow">→</span>
+                </div>
+
+                <div class="algorithm-card spotlight-card" onclick="window.location.href='pages/transportation.html'">
+                    <span class="card-number">02</span>
+                    <h3>Transportation</h3>
+                    <p>NW Corner, Least Cost, VAM methods with MODI optimization</p>
+                    <span class="card-arrow">→</span>
+                </div>
+
+                <div class="algorithm-card spotlight-card" onclick="window.location.href='pages/assignment.html'">
+                    <span class="card-number">03</span>
+                    <h3>Assignment</h3>
+                    <p>Hungarian method for optimal worker-task allocation</p>
+                    <span class="card-arrow">→</span>
+                </div>
+
+                <div class="algorithm-card spotlight-card" onclick="window.location.href='pages/simplex.html'">
+                    <span class="card-number">04</span>
+                    <h3>Simplex</h3>
+                    <p>Linear programming with Big-M method & Branch and Bound</p>
+                    <span class="card-arrow">→</span>
+                </div>
+
+                <div class="algorithm-card spotlight-card" onclick="window.location.href='pages/shortestpath.html'">
+                    <span class="card-number">05</span>
+                    <h3>Shortest Path</h3>
+                    <p>Dynamic programming & Bellman-Ford algorithms</p>
+                    <span class="card-arrow">→</span>
+                </div>
+
+                <div class="algorithm-card spotlight-card" onclick="window.location.href='pages/tsp.html'">
+                    <span class="card-number">06</span>
+                    <h3>TSP</h3>
+                    <p>Traveling Salesman Problem using DP with bitmask</p>
+                    <span class="card-arrow">→</span>
+                </div>
+
+                <div class="algorithm-card spotlight-card" onclick="window.location.href='pages/graphical.html'">
+                    <span class="card-number">07</span>
+                    <h3>Graphical</h3>
+                    <p>Two-variable LP with visual constraint plotting</p>
+                    <span class="card-arrow">→</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works Section -->
+        <section class="how-it-works-section">
+            <h2 class="section-title">How It Works</h2>
+
+            <div class="steps-container">
+                <div class="step-item spotlight-card">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Select an Algorithm</h4>
+                        <p>Choose from 7 classic Operations Research algorithms including Simplex, Transportation, and
+                            more</p>
+                    </div>
+                </div>
+
+                <div class="step-item spotlight-card">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Input Your Problem</h4>
+                        <p>Enter your own matrices, constraints, and objective functions, or generate random test data
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step-item spotlight-card">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Solve & Learn</h4>
+                        <p>Step through the solution one iteration at a time, or auto-solve to see the complete result
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Topics Section -->
+        <section class="topics-section">
+            <h2 class="section-title">Topics Covered</h2>
+
+            <div class="topics-grid">
+                <div class="topic-tag">Dynamic Programming</div>
+                <div class="topic-tag">Linear Programming</div>
+                <div class="topic-tag">Integer Programming</div>
+                <div class="topic-tag">Network Flow</div>
+                <div class="topic-tag">Graph Theory</div>
+                <div class="topic-tag">Optimization</div>
+                <div class="topic-tag">Duality Theory</div>
+                <div class="topic-tag">Sensitivity Analysis</div>
+                <div class="topic-tag">Big-M Method</div>
+                <div class="topic-tag">Branch & Bound</div>
+                <div class="topic-tag">Hungarian Method</div>
+                <div class="topic-tag">MODI Method</div>
+            </div>
+        </section>
+
+        <!-- Footer with Theme Toggle -->
+        <footer class="landing-footer">
+            <div class="footer-info">
+                <h4>About Me</h4>
+                <p>
+                    Passionate about making complex optimization algorithms accessible.
+                    This project is designed to help students and professionals understand the mechanics
+                    behind the solutions.
+                </p>
+                <a href="https://github.com/hurairamuzammal/operation_research" target="_blank" class="github-link">
+                    <svg height="20" width="20" viewBox="0 0 16 16" fill="currentColor">
+                        <path
+                            d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z">
+                        </path>
+                    </svg>
+                    View Source on GitHub
+                </a>
+            </div>
+
+        </footer>
+    </div>
+    <script src="js/theme.js"></script>
+    <script>
+        // Cursor glow effect
+        (function () {
+            const cursorGlow = document.querySelector('.cursor-glow');
+            if (!cursorGlow) return;
+
+            let mouseX = 0, mouseY = 0;
+            let glowX = 0, glowY = 0;
+
+            document.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+                cursorGlow.classList.add('visible');
+            });
+
+            document.addEventListener('mouseleave', () => {
+                cursorGlow.classList.remove('visible');
+            });
+
+            // Smooth animation loop
+            function animate() {
+                glowX += (mouseX - glowX) * 0.4;
+                glowY += (mouseY - glowY) * 0.4;
+                cursorGlow.style.left = glowX + 'px';
+                cursorGlow.style.top = glowY + 'px';
+                requestAnimationFrame(animate);
+            }
+            animate();
+        })();
+
+        // Spotlight effect tracking (Global "Reveal" style)
+        (function () {
+            const cards = document.querySelectorAll('.spotlight-card');
+
+            document.addEventListener('mousemove', (e) => {
+                cards.forEach(card => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+
+                    card.style.setProperty('--mouse-x', `${x}px`);
+                    card.style.setProperty('--mouse-y', `${y}px`);
+                });
+            });
+        })();
+    </script>
+    <script>
+        // Header Scroll Transition Logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const header = document.querySelector('.sticky-header');
+            const heroTitle = document.getElementById('hero-title');
+
+            // Using scroll event for smooth continuous transition
+            window.addEventListener('scroll', () => {
+                const scrollY = window.scrollY;
+
+                // Header Background
+                if (scrollY > 50) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+
+                // Text Transition for Hero
+                if (heroTitle) {
+                    const fadeRange = 300;
+                    let opacity = Math.max(0, 1 - (scrollY / fadeRange));
+                    heroTitle.style.opacity = opacity;
+                    heroTitle.style.transform = `scale(${0.9 + (opacity * 0.1)}) translateY(${scrollY * 0.2}px)`;
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

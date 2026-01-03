@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Transportation - Operation Research</title>
+    <link rel="stylesheet" href="../css/styles.css" />
+</head>
+
+<body>
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" aria-label="Toggle theme">
+        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path
+                d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z" />
+        </svg>
+        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path
+                d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z" />
+        </svg>
+    </button>
+
+    <div class="animated-bg"></div>
+    <div class="app-container">
+        <header>
+            <a href="../index.html" style="text-decoration:none;color:inherit">
+                <h1>Operations Research</h1>
+            </a>
+            <p class="tagline">Transportation Problem</p>
+        </header>
+        <section class="glass-panel">
+            <div class="section-header">
+                <h2>Transportation Problem</h2>
+                <div class="btn-group">
+                    <button id="trans-generate-btn" class="btn secondary">Generate Random</button>
+                    <button id="trans-clear-btn" class="btn secondary small">Clear</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Problem Dimensions</label>
+                <div class="dimension-inputs">
+                    <div class="input-wrapper">
+                        <label style="font-size:0.85rem">Sources (2-10)</label>
+                        <input type="number" id="trans-sources" min="2" max="10" value="3" />
+                    </div>
+                    <div class="input-wrapper">
+                        <label style="font-size:0.85rem">Destinations (2-10)</label>
+                        <input type="number" id="trans-destinations" min="2" max="10" value="4" />
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Cost Matrix, Supply &amp; Demand</label>
+                <div id="trans-matrix"></div>
+            </div>
+            <div id="trans-alloc-section" class="form-group">
+                <label>Initial Allocation Method</label>
+                <div style="display:flex;gap:0.5rem;margin-bottom:1rem">
+                    <button id="trans-alloc-use-method" class="btn primary" style="flex:1">Use NW/LCM/VAM
+                        Method</button>
+                    <button id="trans-alloc-manual" class="btn secondary" style="flex:1">Enter Manually</button>
+                </div>
+                <div id="trans-alloc-method-select" style="margin-bottom:1rem">
+                    <select id="trans-opt-method">
+                        <option value="nw">Northwest Corner Method</option>
+                        <option value="lcm">Least Cost Method (LCM)</option>
+                        <option value="vam" selected>Vogel's Approximation Method (VAM)</option>
+                    </select>
+                </div>
+                <div id="trans-alloc-manual-section" class="hidden">
+                    <p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:0.5rem">Enter your existing
+                        allocations below:</p>
+                    <div id="trans-alloc-matrix"></div>
+                </div>
+            </div>
+            <div class="action-bar">
+                <button id="trans-optimize-btn" class="btn primary large">Solve Transportation Problem</button>
+            </div>
+
+            <!-- Educational Notes -->
+            <div class="edu-notes-container">
+                <button class="edu-notes-toggle"
+                    onclick="this.classList.toggle('open'); this.nextElementSibling.classList.toggle('open');">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 9l6 6 6-6" />
+                    </svg>
+                    <span>Educational Notes</span>
+                </button>
+                <div class="edu-notes-content">
+                    <h4>Understanding the Transportation Problem</h4>
+                    <p>The Transportation Problem minimizes the cost of shipping goods from multiple sources to multiple
+                        destinations while satisfying supply and demand constraints.</p>
+                    <h5>Initial Basic Feasible Solution (IBFS) Methods</h5>
+                    <ul>
+                        <li><strong>North-West Corner:</strong> Start from top-left, allocate maximum possible, move
+                            right or down</li>
+                        <li><strong>Least Cost Method:</strong> Allocate to the cell with minimum cost first</li>
+                        <li><strong>Vogel's Approximation (VAM):</strong> Calculate penalty (difference between two
+                            smallest costs), allocate to highest penalty</li>
+                    </ul>
+                    <h5>MODI (Modified Distribution) Optimization</h5>
+                    <div class="edu-formula">
+                        For basic cells: uᵢ + vⱼ = cᵢⱼ<br><br>
+                        Opportunity cost for non-basic cells: Δᵢⱼ = cᵢⱼ - uᵢ - vⱼ<br><br>
+                        If any Δᵢⱼ < 0, solution is not optimal </div>
+                            <h5>Loop Construction</h5>
+                            <ul>
+                                <li>Enter the most negative Δᵢⱼ cell</li>
+                                <li>Form a closed loop using basic cells</li>
+                                <li>Alternate + and - signs starting with + at entering cell</li>
+                                <li>Transfer minimum of - cells to + cells</li>
+                            </ul>
+                            <div class="edu-example">
+                                <div class="edu-example-title">Total Cost Calculation</div>
+                                <p>Total Cost = Σ (allocation × unit cost) for all allocated cells</p>
+                            </div>
+                    </div>
+                </div>
+        </section>
+        <section id="trans-viz" class="glass-panel hidden">
+            <div class="section-header">
+                <h2>Solution Process</h2>
+            </div>
+            <div id="trans-setup" class="info-box"></div>
+            <div id="trans-initial" style="margin-top:2rem"></div>
+            <div id="trans-modi" style="margin-top:2rem"></div>
+            <div id="trans-final" style="margin-top:2rem"></div>
+        </section>
+    </div>
+    <script src="../js/theme.js"></script>
+    <script src="../js/transportation.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof initTransportation === 'function') initTransportation();
+        });
+    </script>
+</body>
+
+</html>

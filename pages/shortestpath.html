@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shortest Path - Operation Research</title>
+    <link rel="stylesheet" href="../css/styles.css" />
+</head>
+
+<body>
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" aria-label="Toggle theme">
+        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path
+                d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z" />
+        </svg>
+        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path
+                d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z" />
+        </svg>
+    </button>
+
+    <div class="app-container">
+        <header>
+            <a href="../index.html" style="text-decoration:none;color:inherit">
+                <h1>Operations Research</h1>
+            </a>
+            <p class="tagline">Shortest Path</p>
+        </header>
+        <section class="glass-panel">
+            <div class="section-header">
+                <h2>Shortest Path Problem</h2>
+                <div class="btn-group">
+                    <button id="sp-random-btn" class="btn accent">Random</button>
+                    <button id="sp-clear-btn" class="btn secondary">Clear</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Select Algorithm</label>
+                <div class="mode-toggle" style="display:flex;gap:0.5rem;margin-bottom:1rem">
+                    <button id="sp-mode-dp" class="btn primary" style="flex:1">Dynamic Programming</button>
+                    <button id="sp-mode-bellman" class="btn secondary" style="flex:1">Bellman-Ford</button>
+                </div>
+                <p id="sp-mode-desc" style="font-size:0.85rem;color:var(--text-dim)">Uses backward DP for acyclic graphs
+                    with non-negative edges.</p>
+            </div>
+            <div class="form-group">
+                <label>Network Configuration</label>
+                <div class="dimension-inputs">
+                    <div class="input-wrapper">
+                        <label for="sp-size" style="font-size:0.85rem">Number of Nodes</label>
+                        <input type="number" id="sp-size" value="5" min="2" max="10" />
+                    </div>
+                    <div class="input-wrapper">
+                        <label for="sp-start" style="font-size:0.85rem">Start Node</label>
+                        <select id="sp-start"></select>
+                    </div>
+                    <div class="input-wrapper">
+                        <label for="sp-end" style="font-size:0.85rem">End Node</label>
+                        <select id="sp-end"></select>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label id="sp-matrix-label">Adjacency Matrix (enter distance, 0 = no edge)</label>
+                <p id="sp-matrix-hint" class="info-text">Enter edge weights. Leave 0 for no direct connection.</p>
+                <div id="sp-matrix"></div>
+            </div>
+            <div class="action-bar">
+                <button id="sp-solve-btn" class="btn primary large">Solve Shortest Path</button>
+            </div>
+
+            <!-- Educational Notes -->
+            <div class="edu-notes-container">
+                <button class="edu-notes-toggle"
+                    onclick="this.classList.toggle('open'); this.nextElementSibling.classList.toggle('open');">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 9l6 6 6-6" />
+                    </svg>
+                    <span>Educational Notes</span>
+                </button>
+                <div class="edu-notes-content">
+                    <h4>Understanding Shortest Path Algorithms</h4>
+                    <p>Finding the shortest path between nodes in a weighted graph is fundamental to network
+                        optimization.</p>
+                    <h5>Dynamic Programming Approach</h5>
+                    <p>Works on DAGs (Directed Acyclic Graphs) by processing nodes in topological order.</p>
+                    <div class="edu-formula">
+                        dist[v] = min(dist[u] + weight(u,v)) for all edges (u,v)
+                    </div>
+                    <h5>Bellman-Ford Algorithm</h5>
+                    <ul>
+                        <li>Works with negative edge weights</li>
+                        <li>Detects negative cycles</li>
+                        <li>Relaxes all edges V-1 times</li>
+                    </ul>
+                    <div class="edu-formula">
+                        For each edge (u,v):<br>
+                        if dist[u] + weight(u,v) < dist[v]:<br>
+                            &nbsp;&nbsp;dist[v] = dist[u] + weight(u,v)
+                    </div>
+                    <h5>Negative Cycle Detection</h5>
+                    <p>After V-1 iterations, if any edge can still be relaxed, a negative cycle exists.</p>
+                    <div class="edu-example">
+                        <div class="edu-example-title">Choosing the Right Algorithm</div>
+                        <p><strong>DP:</strong> For acyclic graphs, faster O(V+E)</p>
+                        <p><strong>Bellman-Ford:</strong> For graphs with negative weights, O(VE)</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section id="sp-viz" class="glass-panel hidden">
+            <div class="section-header">
+                <h2 id="sp-viz-title">Solution Process</h2>
+            </div>
+            <div id="sp-summary" class="info-box"></div>
+        </section>
+    </div>
+    <script src="../js/theme.js"></script>
+    <script src="../js/shortestpath.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof initShortestPath === 'function') initShortestPath();
+        });
+    </script>
+</body>
+
+</html>

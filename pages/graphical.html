@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Graphical - Operation Research</title>
+    <link rel="stylesheet" href="../css/styles.css" />
+</head>
+
+<body>
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" aria-label="Toggle theme">
+        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path
+                d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z" />
+        </svg>
+        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path
+                d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z" />
+        </svg>
+    </button>
+
+    <div class="app-container">
+        <header>
+            <a href="../index.html" style="text-decoration:none;color:inherit">
+                <h1>Operations Research</h1>
+            </a>
+            <p class="tagline">Graphical Method</p>
+        </header>
+        <section class="glass-panel">
+            <div class="section-header">
+                <h2>Graphical Method (2 Variables)</h2>
+                <div class="btn-group">
+                    <button type="button" id="graph-solve-btn" class="btn primary">Solve Graphical</button>
+                    <button type="button" id="graph-random-btn" class="btn secondary">Random Example</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Objective Function</label>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <select id="graph-obj-type"
+                        style="padding:5px;background:var(--bg-secondary);color:var(--text-primary);border:1px solid var(--border-color);border-radius:4px">
+                        <option value="max">Maximize</option>
+                        <option value="min">Minimize</option>
+                    </select>
+                    <span>Z = </span>
+                    <input type="number" id="graph-obj-x" placeholder="x1" value="3" style="width:60px">
+                    <span>x1 + </span>
+                    <input type="number" id="graph-obj-y" placeholder="x2" value="5" style="width:60px">
+                    <span>x2</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Constraints</label>
+                <div id="graph-constraints-list">
+                    <div class="constraint-row" style="display:flex; gap:8px; margin-bottom:8px;">
+                        <input type="number" class="con-x" placeholder="x1 coeff" value="1" style="width:80px">
+                        <span>x1 +</span>
+                        <input type="number" class="con-y" placeholder="x2 coeff" value="1" style="width:80px">
+                        <span>x2</span>
+                        <select class="con-sign">
+                            <option value="lte">≤</option>
+                            <option value="gte">≥</option>
+                        </select>
+                        <input type="number" class="con-val" placeholder="Value" value="4" style="width:80px">
+                    </div>
+                </div>
+                <div class="item-controls">
+                    <button id="graph-add-con" class="btn small">+ Add Constraint</button>
+                    <button id="graph-remove-con" class="btn small">- Remove Constraint</button>
+                </div>
+            </div>
+            <div id="graphical-viz" style="margin-top:20px;">
+                <div id="graph-canvas-container"
+                    style="background:white; border-radius:4px; padding:10px; text-align:center;">
+                </div>
+                <div id="graph-solution" class="info-box hidden" style="margin-top:10px;"></div>
+            </div>
+
+            <!-- Educational Notes -->
+            <div class="edu-notes-container">
+                <button class="edu-notes-toggle"
+                    onclick="this.classList.toggle('open'); this.nextElementSibling.classList.toggle('open');">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 9l6 6 6-6" />
+                    </svg>
+                    <span>Educational Notes</span>
+                </button>
+                <div class="edu-notes-content">
+                    <h4>Understanding the Graphical Method</h4>
+
+                    <p>The Graphical Method solves Linear Programming problems with two decision variables by
+                        visualizing constraints and finding the optimal solution geometrically.</p>
+
+                    <h5>Key Concepts</h5>
+                    <ul>
+                        <li><strong>Feasible Region:</strong> The area satisfying all constraints simultaneously</li>
+                        <li><strong>Corner Points:</strong> Vertices of the feasible region</li>
+                        <li><strong>Optimal Solution:</strong> Always occurs at a corner point (or along an edge)</li>
+                    </ul>
+
+                    <h5>Corner Point Method</h5>
+                    <div class="edu-formula">
+                        1. Graph all constraints as lines
+                        2. Identify the feasible region
+                        3. Find all corner points (intersections)
+                        4. Evaluate Z at each corner point
+                        5. Select max (or min) Z value
+                    </div>
+
+                    <h5>Special Cases</h5>
+                    <ul>
+                        <li><strong>Unbounded:</strong> Feasible region extends infinitely in the optimization direction
+                        </li>
+                        <li><strong>Infeasible:</strong> No region satisfies all constraints</li>
+                        <li><strong>Multiple Optima:</strong> Objective function parallel to a constraint edge</li>
+                    </ul>
+
+                    <div class="edu-example">
+                        <div class="edu-example-title">Iso-profit Lines</div>
+                        <p>Lines where Z = constant. Move the iso-profit line in the direction of optimization until it
+                            leaves the feasible region—the last corner point touched is optimal.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
+    <script src="../js/theme.js"></script>
+    <script src="../js/graphical.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof initGraphical === 'function') initGraphical();
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Knapsack - Operation Research</title>
+    <link rel="stylesheet" href="../css/styles.css" />
+</head>
+
+<body>
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" aria-label="Toggle theme">
+        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path
+                d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z" />
+        </svg>
+        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path
+                d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z" />
+        </svg>
+    </button>
+
+    <div class="app-container">
+        <header>
+            <a href="../index.html" style="text-decoration:none;color:inherit">
+                <h1>Operations Research</h1>
+            </a>
+            <p class="tagline">Knapsack Problem</p>
+        </header>
+        <section class="glass-panel">
+            <div class="section-header">
+                <h2>0/1 Knapsack Problem</h2>
+                <div class="btn-group">
+                    <button id="knapsack-generate-btn" class="btn secondary">Random</button>
+                    <button id="knapsack-clear-btn" class="btn secondary">Clear</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Select Mode</label>
+                <div class="mode-toggle" style="margin-bottom:1rem">
+                    <select id="knapsack-mode" class="input-select">
+                        <option value="01">0/1 Knapsack (Standard)</option>
+                        <option value="bounded">Bounded Knapsack (Quantity Limits)</option>
+                        <option value="unbounded">Unbounded Knapsack (Infinite Qty)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Knapsack Capacity (W)</label>
+                <input type="number" id="knapsack-capacity" class="capacity-input" value="9" min="1" max="50" />
+            </div>
+            <div class="form-group">
+                <label>Items</label>
+                <div class="items-table-container">
+                    <table class="items-table">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th title="Weight/volume each item takes">Weight</th>
+                                <th title="Base value of item (can be 0 if using Priority only)">Value</th>
+                                <th title="Priority bonus added to value (use this as value if Value=0)">Priority</th>
+                                <th class="k-qty-col" title="Max quantity allowed">Max Qty</th>
+                            </tr>
+                        </thead>
+                        <tbody id="knapsack-items">
+                            <tr draggable="true">
+                                <td><input type="text" class="k-name" value="Item 1" /></td>
+                                <td><input type="number" class="k-weight" value="3" min="1" /></td>
+                                <td><input type="number" class="k-value" value="0" min="0" /></td>
+                                <td><input type="number" class="k-priority" value="5" min="0" /></td>
+                                <td class="k-qty-col"><input type="number" class="k-qty" value="2" min="0" /></td>
+                            </tr>
+                            <tr draggable="true">
+                                <td><input type="text" class="k-name" value="Item 2" /></td>
+                                <td><input type="number" class="k-weight" value="1" min="1" /></td>
+                                <td><input type="number" class="k-value" value="0" min="0" /></td>
+                                <td><input type="number" class="k-priority" value="4" min="0" /></td>
+                                <td class="k-qty-col"><input type="number" class="k-qty" value="2" min="0" /></td>
+                            </tr>
+                            <tr draggable="true">
+                                <td><input type="text" class="k-name" value="Item 3" /></td>
+                                <td><input type="number" class="k-weight" value="2" min="1" /></td>
+                                <td><input type="number" class="k-value" value="0" min="0" /></td>
+                                <td><input type="number" class="k-priority" value="3" min="0" /></td>
+                                <td class="k-qty-col"><input type="number" class="k-qty" value="0" min="0" /></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="item-controls">
+                    <button id="knapsack-add-btn" class="btn small">+ Add Item</button>
+                    <button id="knapsack-remove-btn" class="btn small">- Remove Item</button>
+                </div>
+            </div>
+            <div class="action-bar">
+                <button id="knapsack-solve-btn" class="btn primary large">Solve Knapsack</button>
+            </div>
+
+            <!-- Educational Notes -->
+            <div class="edu-notes-container">
+                <button class="edu-notes-toggle"
+                    onclick="this.classList.toggle('open'); this.nextElementSibling.classList.toggle('open');">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 9l6 6 6-6" />
+                    </svg>
+                    <span>Educational Notes</span>
+                </button>
+                <div class="edu-notes-content">
+                    <h4>Understanding the Knapsack Problem</h4>
+                    <p>The Knapsack Problem is a classic optimization problem where you must select items with given
+                        weights and values to maximize total value without exceeding a weight capacity.</p>
+                    <h5>Types of Knapsack Problems</h5>
+                    <ul>
+                        <li><strong>0/1 Knapsack:</strong> Each item can only be taken once (binary choice)</li>
+                        <li><strong>Bounded Knapsack:</strong> Each item has a limited quantity available</li>
+                        <li><strong>Unbounded Knapsack:</strong> Unlimited copies of each item available</li>
+                    </ul>
+                    <h5>Dynamic Programming Approach</h5>
+                    <p>We build a table <code>dp[i][w]</code> where each cell represents the maximum value achievable
+                        using items 1 to i with capacity w.</p>
+                    <div class="edu-formula">
+                        dp[i][w] = max(dp[i-1][w], dp[i-1][w-wᵢ] + vᵢ)<br><br>
+                        Where: wᵢ = weight of item i, vᵢ = value of item i
+                    </div>
+                    <h5>How to Read the DP Table</h5>
+                    <ul>
+                        <li>Each row represents considering items 1 through i</li>
+                        <li>Each column represents a capacity from 0 to W</li>
+                        <li>The final answer is in cell dp[n][W]</li>
+                        <li>Backtrack from this cell to find which items were selected</li>
+                    </ul>
+                    <div class="edu-example">
+                        <div class="edu-example-title">Example</div>
+                        <p>Items: (weight=2, value=3), (weight=3, value=4), Capacity=5</p>
+                        <p>Solution: Take both items → Total weight=5, Total value=7</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section id="knapsack-viz" class="glass-panel hidden">
+            <div class="section-header">
+                <h2>Solution Process</h2>
+                <div class="step-navigation">
+                    <button id="knapsack-prev" class="btn secondary small">← Previous</button>
+                    <span id="knapsack-step-indicator">Step 0 / 0</span>
+                    <button id="knapsack-next" class="btn secondary small">Next →</button>
+                </div>
+            </div>
+            <div id="knapsack-summary" class="info-box"></div>
+            <div id="knapsack-step-box" class="step-explanation-box">
+                <h3 id="knapsack-step-title">Step</h3>
+                <p id="knapsack-step-desc"></p>
+            </div>
+            <div id="knapsack-dp-table" class="dp-table-wrapper"></div>
+            <div id="knapsack-calc" class="calculation-box hidden"></div>
+            <div id="knapsack-solution" class="info-box hidden"></div>
+            <div class="auto-solve-container">
+                <button id="knapsack-auto" class="btn accent">Auto Solve</button>
+                <button id="knapsack-skip" class="btn secondary">Skip to Solution</button>
+            </div>
+        </section>
+    </div>
+    <script src="../js/theme.js"></script>
+    <script src="../js/knapsack.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof initKnapsack === 'function') initKnapsack();
+        });
+    </script>
+</body>
+
+</html>
