@@ -1,24 +1,29 @@
-// Theme Management with URL Parameter Persistence
-function getThemeFromUrl() {
-    const params = new URLSearchParams(window.location.search);
-    return params.get('theme');
-}
+// Theme Management - Clean localStorage-only approach
+// Apply theme IMMEDIATELY on script load to prevent flash
+(function () {
+    let savedTheme = 'dark';
+    try {
+        savedTheme = localStorage.getItem('theme') || 'dark';
+    } catch (e) {
+        // For file:// protocol, try sessionStorage as fallback
+        try {
+            savedTheme = sessionStorage.getItem('theme') || 'dark';
+        } catch (e2) { }
+    }
+    document.documentElement.setAttribute('data-theme', savedTheme);
+})();
 
 function initTheme() {
     let savedTheme = 'dark';
 
-    // Priority 1: URL Parameter (strongest signal)
-    const urlTheme = getThemeFromUrl();
-    if (urlTheme === 'light' || urlTheme === 'dark') {
-        savedTheme = urlTheme;
-        // Sync to localStorage if possible
-        try { localStorage.setItem('theme', savedTheme); } catch (e) { }
-    } else {
-        // Priority 2: LocalStorage
+    try {
+        savedTheme = localStorage.getItem('theme') || 'dark';
+    } catch (e) {
+        // Fallback for file:// protocol
         try {
-            savedTheme = localStorage.getItem('theme') || 'dark';
-        } catch (e) {
-            console.warn('Unable to access localStorage:', e);
+            savedTheme = sessionStorage.getItem('theme') || 'dark';
+        } catch (e2) {
+            console.warn('Unable to access storage:', e);
         }
     }
 
@@ -32,13 +37,9 @@ function toggleTheme() {
 
     document.documentElement.setAttribute('data-theme', newTheme);
 
-    // Update LocalStorage
+    // Save to both localStorage and sessionStorage for file:// compatibility
     try { localStorage.setItem('theme', newTheme); } catch (e) { }
-
-    // Update URL without reloading
-    const url = new URL(window.location);
-    url.searchParams.set('theme', newTheme);
-    window.history.replaceState({}, '', url);
+    try { sessionStorage.setItem('theme', newTheme); } catch (e) { }
 
     updateLogoVisibility(newTheme);
 }
@@ -58,15 +59,10 @@ function updateLogoVisibility(theme) {
     }
 }
 
-// Navigation helper to preserve theme
+// Simple navigation helper
 window.navigateTo = function (path) {
-    const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
-    const separator = path.includes('?') ? '&' : '?';
-    window.location.href = `${path}${separator}theme=${currentTheme}`;
+    window.location.href = path;
 };
-
-// Initialize immediately
-initTheme();
 
 // Handle back/forward cache
 window.addEventListener('pageshow', (event) => {
