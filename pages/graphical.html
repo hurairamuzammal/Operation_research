@@ -39,38 +39,41 @@
             <div class="section-header">
                 <h2>Graphical Method (2 Variables)</h2>
                 <div class="btn-group">
-                    <button type="button" id="graph-solve-btn" class="btn primary">Solve Graphical</button>
+                    <button type="button" id="graph-solve-btn" class="btn primary" style="display:none;">Solve
+                        Graphical</button>
                     <button type="button" id="graph-random-btn" class="btn secondary">Random Example</button>
                 </div>
             </div>
             <div class="form-group">
                 <label>Objective Function</label>
-                <div style="display:flex; gap:10px; align-items:center;">
+                <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
                     <select id="graph-obj-type"
-                        style="padding:5px;background:var(--bg-secondary);color:var(--text-primary);border:1px solid var(--border-color);border-radius:4px">
+                        style="padding:8px;background:var(--bg-secondary);color:var(--text-primary);border:1px solid var(--border-color);border-radius:4px; min-width:100px;">
                         <option value="max">Maximize</option>
                         <option value="min">Minimize</option>
+                        <option value="none">None</option>
                     </select>
-                    <span>Z = </span>
-                    <input type="number" id="graph-obj-x" placeholder="x1" value="3" style="width:60px">
-                    <span>x1 + </span>
-                    <input type="number" id="graph-obj-y" placeholder="x2" value="5" style="width:60px">
-                    <span>x2</span>
+                    <div id="obj-inputs-container" style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-weight:bold;">Z = </span>
+                        <input type="number" id="graph-obj-x" placeholder="x1" value="3"
+                            style="width:70px; padding:8px; border-radius:4px; border:1px solid var(--border-color);">
+                        <span style="font-weight:bold;">x₁ + </span>
+                        <input type="number" id="graph-obj-y" placeholder="x2" value="5"
+                            style="width:70px; padding:8px; border-radius:4px; border:1px solid var(--border-color);">
+                        <span style="font-weight:bold;">x₂</span>
+                    </div>
                 </div>
             </div>
             <div class="form-group">
-                <label>Constraints</label>
+                <label>Constraints <span style="font-weight:normal;font-size:0.85em;color:var(--text-dim)">(type
+                        equations like: 3x + 2y <= 12, x=y, y>= 2x + 1)</span></label>
                 <div id="graph-constraints-list">
-                    <div class="constraint-row" style="display:flex; gap:8px; margin-bottom:8px;">
-                        <input type="number" class="con-x" placeholder="x1 coeff" value="1" style="width:80px">
-                        <span>x1 +</span>
-                        <input type="number" class="con-y" placeholder="x2 coeff" value="1" style="width:80px">
-                        <span>x2</span>
-                        <select class="con-sign">
-                            <option value="lte">≤</option>
-                            <option value="gte">≥</option>
-                        </select>
-                        <input type="number" class="con-val" placeholder="Value" value="4" style="width:80px">
+                    <div class="constraint-row" style="display:flex; gap:8px; margin-bottom:8px; align-items:center;">
+                        <input type="text" class="con-equation" placeholder="e.g., 3x + 2y <= 12 or x = y"
+                            value="x + y <= 10"
+                            style="flex:1; min-width:200px; padding:8px; border-radius:4px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-family:inherit;">
+                        <input type="color" class="con-color" value="#e74c3c" title="Line Color"
+                            style="width:40px;height:30px;padding:0;border:none;background:none;cursor:pointer;">
                     </div>
                 </div>
                 <div class="item-controls">
@@ -80,7 +83,10 @@
             </div>
             <div id="graphical-viz" style="margin-top:20px;">
                 <div id="graph-canvas-container"
-                    style="background:white; border-radius:4px; padding:10px; text-align:center;">
+                    style="background:white; border-radius:4px; padding:10px; text-align:center; position:relative;">
+                    <button id="graph-reset-zoom" class="btn small"
+                        style="position:absolute; top:10px; right:10px; z-index:10; background:rgba(255,255,255,0.9);">Reset
+                        Zoom</button>
                 </div>
                 <div id="graph-solution" class="info-box hidden" style="margin-top:10px;"></div>
             </div>

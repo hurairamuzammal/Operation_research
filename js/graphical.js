@@ -10,7 +10,7 @@
         if (solveBtn) {
             solveBtn.onclick = () => {
                 console.log("Solve button clicked");
-                solveGraphical();
+                solveGraphical(false); // Manual click -> show alerts if invalid
             };
         }
 
@@ -19,14 +19,73 @@
             randomBtn.onclick = generateRandomProblem;
         }
 
-        document.getElementById('graph-add-con').onclick = addConstraintInput;
-        document.getElementById('graph-remove-con').onclick = removeConstraintInput;
+        document.getElementById('graph-add-con').onclick = () => {
+            addConstraintInput();
+            // solveGraphical(true); // Optional: solve immediately on add? Better wait for input.
+        };
+        document.getElementById('graph-remove-con').onclick = () => {
+            removeConstraintInput();
+            solveGraphical(true);
+        };
+
+        const resetZoomBtn = document.getElementById('graph-reset-zoom');
+        if (resetZoomBtn) {
+            resetZoomBtn.onclick = () => {
+                if (chart) chart.resetZoom();
+            };
+        }
 
         const canvasContainer = document.getElementById('graph-canvas-container');
         if (canvasContainer) {
             canvasContainer.innerHTML = '<canvas id="graphChart" style="max-height:500px;"></canvas>';
-            canvasContainer.innerHTML += '<p style="color:#666;font-size:0.8rem;margin-top:0.5rem;">💡 Use mouse wheel to zoom, drag to pan. Double-click to reset.</p>';
+            canvasContainer.innerHTML += '<p style="color:#666;font-size:0.8rem;margin-top:0.5rem;">💡 <strong>Interactive:</strong> Click anywhere on the graph to check coordinates and Z-value. Drag/Zoom supported.</p>';
         }
+
+        // --- REACTIVITY ---
+        const debounce = (func, wait) => {
+            let timeout;
+            return (...args) => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        };
+
+        const liveSolver = debounce(() => {
+            solveGraphical(true);
+        }, 10); // Instant responsiveness
+
+        // Attach listeners to container for delegation (catches inputs in constraints)
+        const constraintsList = document.getElementById('graph-constraints-list');
+        if (constraintsList) {
+            constraintsList.addEventListener('input', liveSolver);
+            constraintsList.addEventListener('change', liveSolver); // For selects/color
+        }
+
+        // Attach listeners to Objective Function inputs
+        const objTypeSelect = document.getElementById('graph-obj-type');
+        const objInputsContainer = document.getElementById('obj-inputs-container'); // Assuming this container exists in HTML
+
+        if (objTypeSelect) {
+            objTypeSelect.addEventListener('change', (e) => {
+                if (objInputsContainer) {
+                    objInputsContainer.style.display = e.target.value === 'none' ? 'none' : 'flex';
+                }
+                liveSolver();
+            });
+            // Initial state check
+            if (objInputsContainer) {
+                objInputsContainer.style.display = objTypeSelect.value === 'none' ? 'none' : 'flex';
+            }
+        }
+
+        const objInputs = document.querySelectorAll('#graph-obj-x, #graph-obj-y');
+        objInputs.forEach(inp => {
+            inp.addEventListener('input', liveSolver);
+            inp.addEventListener('change', liveSolver);
+        });
+
+        // Initial solve (optional, but good for "ready to go" feel)
+        setTimeout(() => solveGraphical(true), 500);
     }
 
     function generateRandomProblem() {
@@ -43,33 +102,123 @@
             addConstraintInput();
         }
 
+        const signs = ['<=', '>='];
         const rows = list.querySelectorAll('.constraint-row');
         rows.forEach(row => {
-            row.querySelector('.con-x').value = Math.floor(Math.random() * 10) + 1;
-            row.querySelector('.con-y').value = Math.floor(Math.random() * 10) + 1;
-            row.querySelector('.con-sign').value = 'lte';
-            row.querySelector('.con-val').value = Math.floor(Math.random() * 50) + 20;
+            const xCoeff = Math.floor(Math.random() * 10) + 1;
+            const yCoeff = Math.floor(Math.random() * 10) + 1;
+            const sign = signs[Math.floor(Math.random() * signs.length)];
+            const val = Math.floor(Math.random() * 50) + 20;
+            row.querySelector('.con-equation').value = `${xCoeff}x + ${yCoeff}y ${sign} ${val}`;
         });
+
+        // Trigger update
+        solveGraphical(true);
     }
 
     function addConstraintInput() {
+        // Simple color cycler
+        const colors = ['#e74c3c', '#3498db', '#9b59b6', '#f39c12', '#1abc9c', '#34495e', '#e67e22', '#2ecc71'];
+        const existingRows = document.querySelectorAll('#graph-constraints-list .constraint-row');
+        const nextColor = colors[existingRows.length % colors.length];
+
         const div = document.createElement('div');
         div.className = 'constraint-row';
         div.style.display = 'flex';
         div.style.gap = '8px';
         div.style.marginBottom = '8px';
+        div.style.alignItems = 'center';
         div.innerHTML = `
-            <input type="number" class="con-x" placeholder="x1 coeff" value="1" style="width:80px">
-            <span>x1 +</span>
-            <input type="number" class="con-y" placeholder="x2 coeff" value="1" style="width:80px">
-            <span>x2</span>
-            <select class="con-sign">
-                <option value="lte">≤</option>
-                <option value="gte">≥</option>
-            </select>
-            <input type="number" class="con-val" placeholder="Value" value="10" style="width:80px">
+            <input type="text" class="con-equation" placeholder="e.g., 3x + 2y <= 12 or x = y" value="x + y <= 10" 
+                   style="flex:1; min-width:200px; padding:8px; border-radius:4px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-family:inherit;">
+            <input type="color" class="con-color" value="${nextColor}" title="Line Color" style="width:40px;height:30px;padding:0;border:none;background:none;cursor:pointer;">
         `;
         document.getElementById('graph-constraints-list').appendChild(div);
+    }
+
+    // Parse equation string like "3x + 2y <= 12" or "x = y" or "y >= 2x + 1"
+    function parseEquation(eqStr) {
+        if (!eqStr || typeof eqStr !== 'string') return null;
+
+        // Normalize the string
+        let str = eqStr.trim().toLowerCase();
+
+        // Replace common variations
+        str = str.replace(/x1/g, 'x').replace(/x2/g, 'y');
+        str = str.replace(/\s+/g, ' '); // Normalize spaces
+
+        // Detect the operator and split
+        let sign = null;
+        let leftSide, rightSide;
+
+        if (str.includes('<=')) {
+            sign = 'lte';
+            [leftSide, rightSide] = str.split('<=');
+        } else if (str.includes('>=')) {
+            sign = 'gte';
+            [leftSide, rightSide] = str.split('>=');
+        } else if (str.includes('<')) {
+            sign = 'lt';
+            [leftSide, rightSide] = str.split('<');
+        } else if (str.includes('>')) {
+            sign = 'gt';
+            [leftSide, rightSide] = str.split('>');
+        } else if (str.includes('=')) {
+            sign = 'eq';
+            [leftSide, rightSide] = str.split('=');
+        } else {
+            return null; // No valid operator found
+        }
+
+        if (!leftSide || !rightSide) return null;
+
+        // Parse coefficients from each side
+        const parseCoeffs = (side) => {
+            let xCoeff = 0, yCoeff = 0, constant = 0;
+
+            // Normalize: add + before - for easier splitting
+            side = side.replace(/-/g, '+-').replace(/^\+/, '').replace(/\+\+/g, '+');
+
+            const terms = side.split('+').filter(t => t.trim() !== '');
+
+            for (let term of terms) {
+                term = term.trim();
+                if (!term) continue;
+
+                if (term.includes('x')) {
+                    // x term
+                    let coeff = term.replace('x', '').trim();
+                    if (coeff === '' || coeff === '+') coeff = '1';
+                    if (coeff === '-') coeff = '-1';
+                    xCoeff += parseFloat(coeff) || 0;
+                } else if (term.includes('y')) {
+                    // y term
+                    let coeff = term.replace('y', '').trim();
+                    if (coeff === '' || coeff === '+') coeff = '1';
+                    if (coeff === '-') coeff = '-1';
+                    yCoeff += parseFloat(coeff) || 0;
+                } else {
+                    // Constant term
+                    constant += parseFloat(term) || 0;
+                }
+            }
+
+            return { x: xCoeff, y: yCoeff, c: constant };
+        };
+
+        const left = parseCoeffs(leftSide);
+        const right = parseCoeffs(rightSide);
+
+        // Move everything to left side: left - right <= 0 or >= 0
+        // Standard form: Ax + By <op> C
+        // left.x*x + left.y*y + left.c <op> right.x*x + right.y*y + right.c
+        // (left.x - right.x)*x + (left.y - right.y)*y <op> right.c - left.c
+
+        const xCoeff = left.x - right.x;
+        const yCoeff = left.y - right.y;
+        const val = right.c - left.c;
+
+        return { x: xCoeff, y: yCoeff, sign, val };
     }
 
     function removeConstraintInput() {
@@ -79,43 +228,50 @@
         }
     }
 
-    function solveGraphical() {
-        console.log("solveGraphical started");
+    // isLive = true suppresses alerts for smoother typing experience
+    function solveGraphical(isLive = false) {
+        console.log("solveGraphical started", { isLive });
 
         try {
-            const inputs = Array.from(document.querySelectorAll('input.con-x, input.con-y, input.con-val, #graph-obj-x, #graph-obj-y'));
-            if (inputs.some(i => i.value.trim() === '')) { alert("Please fill in all fields."); return; }
+            const objInputs = Array.from(document.querySelectorAll('#graph-obj-x, #graph-obj-y'));
+
+            // Check objective function inputs
+            const hasObjEmpty = objInputs.some(i => i.value.trim() === '');
+            if (hasObjEmpty) {
+                if (!isLive) alert("Please fill in objective function coefficients.");
+                return;
+            }
 
             const objType = document.getElementById('graph-obj-type').value;
             const objX = parseFloat(document.getElementById('graph-obj-x').value) || 0;
             const objY = parseFloat(document.getElementById('graph-obj-y').value) || 0;
             objective = { type: objType, x: objX, y: objY };
-            console.log("Objective:", objective);
 
             constraints = [];
             const rows = document.querySelectorAll('#graph-constraints-list .constraint-row');
 
             rows.forEach((row, idx) => {
-                const xInput = row.querySelector('.con-x');
-                const yInput = row.querySelector('.con-y');
-                const signInput = row.querySelector('.con-sign');
-                const valInput = row.querySelector('.con-val');
+                const eqInput = row.querySelector('.con-equation');
+                const colorInput = row.querySelector('.con-color');
 
-                if (!xInput || !yInput || !signInput || !valInput) {
-                    console.error("Invalid constraint row definition", row);
+                if (!eqInput) return;
+
+                const eqStr = eqInput.value.trim();
+                if (!eqStr) return;
+
+                const parsed = parseEquation(eqStr);
+                if (!parsed) {
+                    // Invalid equation, skip silently in live mode
                     return;
                 }
 
-                const x = parseFloat(xInput.value) || 0;
-                const y = parseFloat(yInput.value) || 0;
-                const sign = signInput.value;
-                const val = parseFloat(valInput.value) || 0;
-                constraints.push({ x, y, sign, val });
-                console.log(`Constraint ${idx}:`, { x, y, sign, val });
+                const color = colorInput ? colorInput.value : getLineColor(idx);
+                constraints.push({ ...parsed, color });
             });
 
-            constraints.push({ x: 1, y: 0, sign: 'gte', val: 0 });
-            constraints.push({ x: 0, y: 1, sign: 'gte', val: 0 });
+            // Implicit constraints (color not needed usually, but let's be consistent)
+            constraints.push({ x: 1, y: 0, sign: 'gte', val: 0, isImplicit: true });
+            constraints.push({ x: 0, y: 1, sign: 'gte', val: 0, isImplicit: true });
 
             const lines = [...constraints];
 
@@ -128,34 +284,40 @@
                     }
                 }
             }
-            console.log("Intersection Points:", points);
 
             const feasiblePoints = points.filter(pt => {
                 return constraints.every(c => checkConstraint(pt, c));
             });
-            console.log("Feasible Points:", feasiblePoints);
 
             let optimalZ = objective.type === 'max' ? -Infinity : Infinity;
             let optimalPt = null;
 
-            feasiblePoints.forEach(pt => {
-                const z = objective.x * pt.x + objective.y * pt.y;
-                if (objective.type === 'max') {
-                    if (z > optimalZ) {
-                        optimalZ = z;
-                        optimalPt = pt;
+            if (objective.type !== 'none') {
+                feasiblePoints.forEach(pt => {
+                    const z = objective.x * pt.x + objective.y * pt.y;
+                    if (objective.type === 'max') {
+                        if (z > optimalZ) {
+                            optimalZ = z;
+                            optimalPt = pt;
+                        }
+                    } else {
+                        if (z < optimalZ) {
+                            optimalZ = z;
+                            optimalPt = pt;
+                        }
                     }
-                } else {
-                    if (z < optimalZ) {
-                        optimalZ = z;
-                        optimalPt = pt;
-                    }
-                }
-            });
-            console.log("Optimal Point:", optimalPt, "Z:", optimalZ);
+                });
+            } else {
+                optimalZ = null;
+            }
 
-            drawChartJS(lines.slice(0, -2), feasiblePoints, optimalPt, optimalZ);
-            displaySolution(optimalPt, optimalZ);
+            drawChartJS(lines.filter(l => !l.isImplicit), feasiblePoints, optimalPt, optimalZ);
+
+            if (objective.type !== 'none') {
+                displaySolution(optimalPt, optimalZ);
+            } else {
+                document.getElementById('graph-solution').style.display = 'none';
+            }
 
             const vizContainer = document.getElementById('graphical-viz');
             if (vizContainer) {
@@ -164,7 +326,7 @@
             }
         } catch (e) {
             console.error("Error in solveGraphical:", e);
-            alert("Error in solveGraphical: " + e.message);
+            if (!isLive) alert("Error in solveGraphical: " + e.message);
         }
     }
 
@@ -182,6 +344,9 @@
         const tolerance = 1e-6;
         if (c.sign === 'lte') return val <= c.val + tolerance;
         if (c.sign === 'gte') return val >= c.val - tolerance;
+        if (c.sign === 'lt') return val < c.val - tolerance; // Strict
+        if (c.sign === 'gt') return val > c.val + tolerance; // Strict
+        if (c.sign === 'eq') return Math.abs(val - c.val) <= tolerance; // Equality
         return true;
     }
 
@@ -229,113 +394,214 @@
             chart.destroy();
         }
 
+        // 1. Determine Scale Bounds with generous padding for "Infinite" feel
+        // We will define a large ViewBox, e.g. [-5, maxX+padding, -5, maxY+padding]
         let maxX = 10, maxY = 10;
+
         userConstraints.forEach(l => {
+            // Find intercepts to gauge scale
             if (Math.abs(l.x) > 1e-6) {
                 const xInt = l.val / l.x;
-                if (xInt > 0 && isFinite(xInt)) maxX = Math.max(maxX, xInt * 1.3);
+                if (isFinite(xInt)) maxX = Math.max(maxX, Math.abs(xInt));
             }
             if (Math.abs(l.y) > 1e-6) {
                 const yInt = l.val / l.y;
-                if (yInt > 0 && isFinite(yInt)) maxY = Math.max(maxY, yInt * 1.3);
+                if (isFinite(yInt)) maxY = Math.max(maxY, Math.abs(yInt));
             }
         });
         feasiblePts.forEach(p => {
-            if (isFinite(p.x)) maxX = Math.max(maxX, p.x * 1.3);
-            if (isFinite(p.y)) maxY = Math.max(maxY, p.y * 1.3);
+            if (isFinite(p.x)) maxX = Math.max(maxX, p.x);
+            if (isFinite(p.y)) maxY = Math.max(maxY, p.y);
         });
 
+        // "Infinite" Viewport Boundaries (-X to +X)
+        const rangeX = maxX * 1.5;
+        const rangeY = maxY * 1.5;
+        const minX = -rangeX * 0.2; // Show some negative
+        const minY = -rangeY * 0.2;
+        const viewMaxX = rangeX;
+        const viewMaxY = rangeY;
+
+        // Bounding Box for clipping lines & shading - use MUCH LARGER bounds to prevent cutoff
+        const shadePadding = 2; // Extend shading well beyond visible area
+        const bounds = {
+            minX: minX * shadePadding,
+            maxX: viewMaxX * shadePadding,
+            minY: minY * shadePadding,
+            maxY: viewMaxY * shadePadding
+        };
+
+        // 2. Prepare Datasets
         const datasets = [];
 
-        userConstraints.forEach((c, idx) => {
-            const lineData = getConstraintLinePoints(c, maxX, maxY);
+        // --- A. Half-Plane Shading (Bottom Layer) - Desmos-style ---
+        // Store polygon data for custom plugin drawing (Chart.js fill doesn't work reliably in scatter)
+        const shadePolygons = [];
+        userConstraints.forEach((c) => {
+            // Skip shading for equalities (they define lines, not regions)
+            if (c.sign === 'eq') return;
+
+            // Calculate polygon clipping against bounds
+            const poly = getInequalityPolygon(c, bounds);
+
+            // Convert hex color to rgba for shading
+            const color = c.color || '#333333';
+            const rgba = hexToRgba(color, 0.35); // Desmos-like opacity
+
+            if (poly.length >= 3) {
+                shadePolygons.push({
+                    points: poly,
+                    fillColor: rgba,
+                    strokeColor: color
+                });
+            }
+        });
+
+        // Custom plugin to draw filled polygons using native canvas
+        const shadingPlugin = {
+            id: 'halfPlaneShading',
+            beforeDatasetsDraw: (chart) => {
+                const ctx = chart.ctx;
+                const xScale = chart.scales.x;
+                const yScale = chart.scales.y;
+
+                ctx.save();
+
+                shadePolygons.forEach(({ points, fillColor }) => {
+                    if (points.length < 3) return;
+
+                    ctx.beginPath();
+                    ctx.fillStyle = fillColor;
+
+                    const startX = xScale.getPixelForValue(points[0].x);
+                    const startY = yScale.getPixelForValue(points[0].y);
+                    ctx.moveTo(startX, startY);
+
+                    for (let i = 1; i < points.length; i++) {
+                        const px = xScale.getPixelForValue(points[i].x);
+                        const py = yScale.getPixelForValue(points[i].y);
+                        ctx.lineTo(px, py);
+                    }
+
+                    ctx.closePath();
+                    ctx.fill();
+                });
+
+                ctx.restore();
+            }
+        };
+
+        // --- B. Infinite Lines (Middle Layer) ---
+        const signSymbols = { lte: '≤', gte: '≥', lt: '<', gt: '>', eq: '=' };
+        userConstraints.forEach((c) => {
+            const pts = getClippedLinePoints(c, bounds);
+            const isStrict = c.sign === 'lt' || c.sign === 'gt';
+            const signSymbol = signSymbols[c.sign] || c.sign;
             datasets.push({
-                label: `${c.x}x₁ + ${c.y}x₂ ${c.sign === 'lte' ? '≤' : '≥'} ${c.val}`,
-                data: lineData,
-                borderColor: getLineColor(idx),
+                label: `${c.x}x₁ + ${c.y}x₂ ${signSymbol} ${c.val}`,
+                data: pts,
+                borderColor: c.color || '#333',
                 borderWidth: 2,
+                borderDash: isStrict ? [10, 5] : [], // Dashed if strict inequality
                 pointRadius: 0,
                 fill: false,
                 showLine: true,
-                tension: 0
+                tension: 0,
+                order: 5
             });
         });
 
+        // --- C. Feasible Region Overlay (Green, Darker Intersection) ---
         if (feasiblePts.length >= 3) {
             const hull = getConvexHull(feasiblePts);
             const hullData = hull.map(p => ({ x: p.x, y: p.y }));
             hullData.push(hullData[0]);
             datasets.push({
-                label: 'Feasible Region',
+                label: 'Feasible Area',
                 data: hullData,
-                backgroundColor: 'rgba(40, 167, 69, 0.2)',
-                borderColor: 'rgba(40, 167, 69, 0.8)',
-                borderWidth: 2,
+                backgroundColor: 'rgba(40, 167, 69, 0.5)', // Distinct green
+                borderColor: '#28a745',
+                borderWidth: 3,
                 fill: true,
                 showLine: true,
                 pointRadius: 0,
-                tension: 0
+                tension: 0,
+                order: 3
             });
         }
 
+        // --- D. Corner Points ---
         const cornerPoints = feasiblePts.map(p => ({ x: p.x, y: p.y }));
         datasets.push({
             label: 'Corner Points',
             data: cornerPoints,
-            backgroundColor: '#007bff',
-            borderColor: '#0056b3',
-            pointRadius: 5,
-            pointHoverRadius: 8,
-            showLine: false
+            backgroundColor: '#ffffff',
+            borderColor: '#007bff',
+            borderWidth: 2,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            showLine: false,
+            order: 2
         });
 
-        if (optPt) {
+        // --- E. Optimal Point ---
+        if (optPt && optZ !== null) {
             datasets.push({
-                label: `Optimal (${optPt.x.toFixed(2)}, ${optPt.y.toFixed(2)}) Z=${optZ.toFixed(2)}`,
+                label: `Result: Z=${optZ.toFixed(2)}`,
                 data: [{ x: optPt.x, y: optPt.y }],
                 backgroundColor: '#dc3545',
                 borderColor: '#dc3545',
-                pointRadius: 10,
-                pointHoverRadius: 14,
-                pointStyle: 'star',
-                showLine: false
+                pointRadius: 8,
+                pointHoverRadius: 10,
+                pointStyle: 'circle',
+                showLine: false,
+                order: 1
             });
         }
+
+        // --- F. Interactive Marker ---
+        const interactiveDatasetIndex = datasets.length;
+        datasets.push({
+            label: 'Inspected Point',
+            data: [],
+            backgroundColor: '#ff9f43',
+            borderColor: '#ff9f43',
+            pointRadius: 6,
+            pointStyle: 'rectRot',
+            showLine: false,
+            order: 0 // Top
+        });
 
         chart = new Chart(canvas, {
             type: 'scatter',
             data: { datasets },
+            plugins: [shadingPlugin], // Custom plugin for half-plane shading
             options: {
                 responsive: true,
-                maintainAspectRatio: true,
+                maintainAspectRatio: false,
                 aspectRatio: 1.5,
+                animation: { duration: 0 }, // Instant
                 scales: {
                     x: {
                         type: 'linear',
                         position: 'bottom',
-                        min: 0,
-                        max: Math.ceil(maxX),
-                        title: {
-                            display: true,
-                            text: 'x₁',
-                            font: { size: 14, weight: 'bold' }
-                        },
+                        min: Math.floor(minX),
+                        max: Math.ceil(viewMaxX),
                         grid: {
-                            color: 'rgba(0,0,0,0.1)'
-                        }
+                            color: (ctx) => ctx.tick.value === 0 ? '#000' : 'rgba(0,0,0,0.1)',
+                            lineWidth: (ctx) => ctx.tick.value === 0 ? 2 : 1,
+                        },
+                        title: { display: true, text: 'x₁', font: { weight: 'bold' } }
                     },
                     y: {
                         type: 'linear',
-                        min: 0,
-                        max: Math.ceil(maxY),
-                        title: {
-                            display: true,
-                            text: 'x₂',
-                            font: { size: 14, weight: 'bold' }
-                        },
+                        min: Math.floor(minY),
+                        max: Math.ceil(viewMaxY),
                         grid: {
-                            color: 'rgba(0,0,0,0.1)'
-                        }
+                            color: (ctx) => ctx.tick.value === 0 ? '#000' : 'rgba(0,0,0,0.1)',
+                            lineWidth: (ctx) => ctx.tick.value === 0 ? 2 : 1,
+                        },
+                        title: { display: true, text: 'x₂', font: { weight: 'bold' } }
                     }
                 },
                 plugins: {
@@ -343,76 +609,169 @@
                         position: 'bottom',
                         labels: {
                             usePointStyle: true,
-                            padding: 15,
-                            font: { size: 11 }
+                            boxWidth: 10,
+                            filter: (item) => item.text !== 'Shade' // Hide individual shade entries
                         }
                     },
                     tooltip: {
                         callbacks: {
-                            label: function (context) {
-                                const pt = context.raw;
+                            label: (ctx) => {
+                                const pt = ctx.raw;
+                                if (ctx.datasetIndex === interactiveDatasetIndex && objective.type !== 'none') {
+                                    const z = objective.x * pt.x + objective.y * pt.y;
+                                    return `(${pt.x.toFixed(2)}, ${pt.y.toFixed(2)}) Z = ${z.toFixed(2)}`;
+                                }
                                 return `(${pt.x.toFixed(2)}, ${pt.y.toFixed(2)})`;
                             }
                         }
                     },
                     zoom: {
-                        zoom: {
-                            wheel: { enabled: true },
-                            pinch: { enabled: true },
-                            mode: 'xy'
-                        },
-                        pan: {
-                            enabled: true,
-                            mode: 'xy'
-                        }
+                        zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'xy' },
+                        pan: { enabled: true, mode: 'xy' }
                     }
                 },
-                onClick: function (evt, elements) {
-                    if (elements.length === 0) {
-                        chart.resetZoom();
+                onClick: (evt) => {
+                    const xAxis = chart.scales.x;
+                    const yAxis = chart.scales.y;
+                    const xClick = xAxis.getValueForPixel(evt.x);
+                    const yClick = yAxis.getValueForPixel(evt.y);
+
+                    if (isFinite(xClick) && isFinite(yClick)) {
+                        chart.data.datasets[interactiveDatasetIndex].data = [{ x: xClick, y: yClick }];
+
+                        let label = `(${xClick.toFixed(1)}, ${yClick.toFixed(1)})`;
+                        if (objective.type !== 'none') {
+                            const currentZ = objective.x * xClick + objective.y * yClick;
+                            label += ` Z=${currentZ.toFixed(2)}`;
+                        }
+
+                        chart.data.datasets[interactiveDatasetIndex].label = label;
+                        chart.update('none');
                     }
                 }
             }
         });
     }
 
-    function getConstraintLinePoints(c, maxX, maxY) {
-        const points = [];
+    // --- GEOMETRY HELPERS ---
 
-        if (Math.abs(c.y) < 1e-9 && Math.abs(c.x) > 1e-9) {
-            const xVal = c.val / c.x;
-            if (xVal >= 0) {
-                points.push({ x: xVal, y: 0 });
-                points.push({ x: xVal, y: maxY });
-            }
-        } else if (Math.abs(c.x) < 1e-9 && Math.abs(c.y) > 1e-9) {
-            const yVal = c.val / c.y;
-            if (yVal >= 0) {
-                points.push({ x: 0, y: yVal });
-                points.push({ x: maxX, y: yVal });
-            }
-        } else if (Math.abs(c.x) > 1e-9 && Math.abs(c.y) > 1e-9) {
-            const xInt = c.val / c.x;
-            const yInt = c.val / c.y;
+    // Get 2 points representing the line clipped to bounds
+    function getClippedLinePoints(c, b) {
+        // Ax + By = Val
+        // Intersect with x=minX, x=maxX, y=minY, y=maxY
+        const pts = [];
+        const { minX, maxX, minY, maxY } = b;
+        const tol = 1e-9;
 
-            if (xInt >= 0) points.push({ x: xInt, y: 0 });
-            if (yInt >= 0) points.push({ x: 0, y: yInt });
+        const candidates = [];
 
-            if (xInt < 0 && c.y !== 0) {
-                const y0 = c.val / c.y;
-                const yMax = (c.val - c.x * maxX) / c.y;
-                if (y0 >= 0) points.push({ x: 0, y: y0 });
-                if (yMax >= 0) points.push({ x: maxX, y: yMax });
-            }
-            if (yInt < 0 && c.x !== 0) {
-                const x0 = c.val / c.x;
-                const xAtMaxY = (c.val - c.y * maxY) / c.x;
-                if (x0 >= 0) points.push({ x: x0, y: 0 });
-                if (xAtMaxY >= 0) points.push({ x: xAtMaxY, y: maxY });
+        // Intersection with x = minX
+        if (Math.abs(c.y) > tol) candidates.push({ x: minX, y: (c.val - c.x * minX) / c.y });
+        // Intersection with x = maxX
+        if (Math.abs(c.y) > tol) candidates.push({ x: maxX, y: (c.val - c.x * maxX) / c.y });
+        // Intersection with y = minY
+        if (Math.abs(c.x) > tol) candidates.push({ x: (c.val - c.y * minY) / c.x, y: minY });
+        // Intersection with y = maxY
+        if (Math.abs(c.x) > tol) candidates.push({ x: (c.val - c.y * maxY) / c.x, y: maxY });
+
+        // Filter points within bounds
+        const epsilon = 1e-5; // Tolerance for floating point comparisons
+        const valid = candidates.filter(p =>
+            p.x >= minX - epsilon && p.x <= maxX + epsilon &&
+            p.y >= minY - epsilon && p.y <= maxY + epsilon
+        );
+
+        // Sort unique points to ensure consistent line drawing
+        valid.sort((p1, p2) => p1.x - p2.x || p1.y - p2.y);
+
+        // Remove duplicates
+        const unique = [];
+        if (valid.length > 0) unique.push(valid[0]);
+        for (let i = 1; i < valid.length; i++) {
+            const last = unique[unique.length - 1];
+            if (Math.abs(valid[i].x - last.x) > epsilon || Math.abs(valid[i].y - last.y) > epsilon) {
+                unique.push(valid[i]);
             }
         }
 
-        return points.slice(0, 2);
+        return unique;
+    }
+
+    // Get polygon for the half-plane inequality clipped to bounds
+    function getInequalityPolygon(c, b) {
+        // 1. Get clipped line points (2 points usually)
+        const linePts = getClippedLinePoints(c, b);
+        if (linePts.length < 2) {
+            // If the line doesn't intersect the box, check if the entire box satisfies the constraint
+            const testPoint = { x: (b.minX + b.maxX) / 2, y: (b.minY + b.maxY) / 2 };
+            if (checkConstraint(testPoint, c)) {
+                // Entire box is feasible, return box corners
+                return [
+                    { x: b.minX, y: b.minY },
+                    { x: b.maxX, y: b.minY },
+                    { x: b.maxX, y: b.maxY },
+                    { x: b.minX, y: b.maxY },
+                    { x: b.minX, y: b.minY } // Close loop
+                ];
+            }
+            return []; // Entire box is infeasible
+        }
+
+        // 2. Add corners of bounding box that satisfy inequality
+        const corners = [
+            { x: b.minX, y: b.minY },
+            { x: b.maxX, y: b.minY },
+            { x: b.maxX, y: b.maxY },
+            { x: b.minX, y: b.maxY }
+        ];
+
+        const validCorners = corners.filter(p => checkConstraint(p, c));
+
+        // 3. Combine line points and valid corners
+        const allPoints = [...linePts, ...validCorners];
+
+        // Remove duplicates from allPoints
+        const uniquePoints = [];
+        const seen = new Set();
+        const epsilon = 1e-5;
+        for (const p of allPoints) {
+            const key = `${p.x.toFixed(5)},${p.y.toFixed(5)}`;
+            if (!seen.has(key)) {
+                uniquePoints.push(p);
+                seen.add(key);
+            }
+        }
+
+        // 4. Sort points to form a convex polygon (Graham scan or simple atan2)
+        if (uniquePoints.length < 3) return []; // Need at least 3 points for a polygon
+
+        // Find centroid for sorting
+        const center = uniquePoints.reduce((acc, p) => ({ x: acc.x + p.x, y: acc.y + p.y }), { x: 0, y: 0 });
+        center.x /= uniquePoints.length;
+        center.y /= uniquePoints.length;
+
+        uniquePoints.sort((a, b) => {
+            const angleA = Math.atan2(a.y - center.y, a.x - center.x);
+            const angleB = Math.atan2(b.y - center.y, b.x - center.x);
+            if (angleA !== angleB) return angleA - angleB;
+            // If angles are the same, sort by distance from center
+            const distA = (a.x - center.x) ** 2 + (a.y - center.y) ** 2;
+            const distB = (b.x - center.x) ** 2 + (b.y - center.y) ** 2;
+            return distA - distB;
+        });
+
+        uniquePoints.push(uniquePoints[0]); // Close loop
+        return uniquePoints;
+    }
+
+    function hexToRgba(hex, alpha) {
+        // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+        const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+        hex = hex.replace(shorthandRegex, function (m, r, g, b) {
+            return r + r + g + g + b + b;
+        });
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? `rgba(${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}, ${alpha})` : `rgba(0,0,0,${alpha})`;
     }
 
     function getLineColor(idx) {
