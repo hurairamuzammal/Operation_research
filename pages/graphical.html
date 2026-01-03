@@ -44,36 +44,44 @@
                     <button type="button" id="graph-random-btn" class="btn secondary">Random Example</button>
                 </div>
             </div>
-            <div class="form-group">
-                <label>Objective Function</label>
+            <!-- Collapsible Objective Function Toggle -->
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                <button type="button" id="toggle-objective-btn" class="btn small"
+                    style="padding:4px 12px; font-size:13px;"
+                    onclick="document.getElementById('objective-panel').classList.toggle('hidden'); this.textContent = this.textContent.includes('▶') ? '▼ Hide Objective' : '▶ Optimize';">
+                    ▶ Optimize
+                </button>
+                <span style="font-size:12px; color:var(--text-dim);">Click to set optimization goal</span>
+            </div>
+            <div id="objective-panel" class="hidden"
+                style="padding:10px; background:var(--bg-tertiary); border-radius:6px; margin-bottom:10px;">
                 <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
                     <select id="graph-obj-type"
-                        style="padding:8px;background:var(--bg-secondary);color:var(--text-primary);border:1px solid var(--border-color);border-radius:4px; min-width:100px;">
+                        style="padding:6px 10px; background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border-color); border-radius:4px; width:auto; font-size:14px;">
                         <option value="max">Maximize</option>
                         <option value="min">Minimize</option>
                         <option value="none">None</option>
                     </select>
-                    <div id="obj-inputs-container" style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-weight:bold;">Z = </span>
+                    <div id="obj-inputs-container" style="display:flex; align-items:center; gap:6px;">
+                        <span style="font-weight:bold;">Z =</span>
                         <input type="number" id="graph-obj-x" placeholder="x1" value="3"
-                            style="width:70px; padding:8px; border-radius:4px; border:1px solid var(--border-color);">
-                        <span style="font-weight:bold;">x₁ + </span>
+                            style="width:55px; padding:6px; border-radius:4px; border:1px solid var(--border-color); font-size:14px;">
+                        <span style="font-weight:bold;">x₁ +</span>
                         <input type="number" id="graph-obj-y" placeholder="x2" value="5"
-                            style="width:70px; padding:8px; border-radius:4px; border:1px solid var(--border-color);">
+                            style="width:55px; padding:6px; border-radius:4px; border:1px solid var(--border-color); font-size:14px;">
                         <span style="font-weight:bold;">x₂</span>
                     </div>
                 </div>
             </div>
             <div class="form-group">
-                <label>Constraints <span style="font-weight:normal;font-size:0.85em;color:var(--text-dim)">(type
-                        equations like: 3x + 2y <= 12, x=y, y>= 2x + 1)</span></label>
+                <label>Constraints <span style="font-weight:normal;font-size:0.85em;color:var(--text-dim)">(e.g., 3x +
+                        2y <= 12, x=y)</span></label>
                 <div id="graph-constraints-list">
-                    <div class="constraint-row" style="display:flex; gap:8px; margin-bottom:8px; align-items:center;">
-                        <input type="text" class="con-equation" placeholder="e.g., 3x + 2y <= 12 or x = y"
-                            value="x + y <= 10"
-                            style="flex:1; min-width:200px; padding:8px; border-radius:4px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-family:inherit;">
+                    <div class="constraint-row" style="display:flex; gap:8px; margin-bottom:6px; align-items:center;">
+                        <input type="text" class="con-equation" placeholder="e.g., 3x + 2y <= 12" value="x + y <= 10"
+                            style="width:250px; padding:6px 10px; border-radius:4px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-family:inherit; font-size:14px;">
                         <input type="color" class="con-color" value="#e74c3c" title="Line Color"
-                            style="width:40px;height:30px;padding:0;border:none;background:none;cursor:pointer;">
+                            style="width:30px;height:26px;padding:0;border:none;background:none;cursor:pointer;">
                     </div>
                 </div>
                 <div class="item-controls">

@@ -126,12 +126,12 @@
         div.className = 'constraint-row';
         div.style.display = 'flex';
         div.style.gap = '8px';
-        div.style.marginBottom = '8px';
+        div.style.marginBottom = '6px';
         div.style.alignItems = 'center';
         div.innerHTML = `
-            <input type="text" class="con-equation" placeholder="e.g., 3x + 2y <= 12 or x = y" value="x + y <= 10" 
-                   style="flex:1; min-width:200px; padding:8px; border-radius:4px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-family:inherit;">
-            <input type="color" class="con-color" value="${nextColor}" title="Line Color" style="width:40px;height:30px;padding:0;border:none;background:none;cursor:pointer;">
+            <input type="text" class="con-equation" placeholder="e.g., 3x + 2y <= 12" value="x + y <= 10" 
+                   style="width:250px; padding:6px 10px; border-radius:4px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-family:inherit; font-size:14px;">
+            <input type="color" class="con-color" value="${nextColor}" title="Line Color" style="width:30px;height:26px;padding:0;border:none;background:none;cursor:pointer;">
         `;
         document.getElementById('graph-constraints-list').appendChild(div);
     }
@@ -233,18 +233,28 @@
         console.log("solveGraphical started", { isLive });
 
         try {
-            const objInputs = Array.from(document.querySelectorAll('#graph-obj-x, #graph-obj-y'));
+            // Check if objective panel is hidden - default to 'none' if collapsed
+            const objPanel = document.getElementById('objective-panel');
+            const isObjHidden = objPanel && objPanel.classList.contains('hidden');
 
-            // Check objective function inputs
-            const hasObjEmpty = objInputs.some(i => i.value.trim() === '');
-            if (hasObjEmpty) {
-                if (!isLive) alert("Please fill in objective function coefficients.");
-                return;
+            let objType, objX, objY;
+            if (isObjHidden) {
+                // Default to no optimization when panel is hidden
+                objType = 'none';
+                objX = 0;
+                objY = 0;
+            } else {
+                // Check objective function inputs
+                const objInputs = Array.from(document.querySelectorAll('#graph-obj-x, #graph-obj-y'));
+                const hasObjEmpty = objInputs.some(i => i.value.trim() === '');
+                if (hasObjEmpty) {
+                    if (!isLive) alert("Please fill in objective function coefficients.");
+                    return;
+                }
+                objType = document.getElementById('graph-obj-type').value;
+                objX = parseFloat(document.getElementById('graph-obj-x').value) || 0;
+                objY = parseFloat(document.getElementById('graph-obj-y').value) || 0;
             }
-
-            const objType = document.getElementById('graph-obj-type').value;
-            const objX = parseFloat(document.getElementById('graph-obj-x').value) || 0;
-            const objY = parseFloat(document.getElementById('graph-obj-y').value) || 0;
             objective = { type: objType, x: objX, y: objY };
 
             constraints = [];

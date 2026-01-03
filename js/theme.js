@@ -93,7 +93,96 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (typeof initTabGlow === 'function') initTabGlow();
     initTheme();
+
+    // Initialize cursor glow effect on all pages
+    initCursorGlow();
 });
+
+// =====================================================
+// CURSOR GLOW EFFECT - Fast, Smooth & Responsive
+// =====================================================
+function initCursorGlow() {
+    // Create cursor glow element if it doesn't exist
+    let cursorGlow = document.querySelector('.cursor-glow');
+    if (!cursorGlow) {
+        cursorGlow = document.createElement('div');
+        cursorGlow.className = 'cursor-glow';
+        document.body.appendChild(cursorGlow);
+    }
+
+    let mouseX = 0, mouseY = 0;
+    let glowX = 0, glowY = 0;
+    let isVisible = false;
+    let animationId = null;
+
+    // Lerp factor - higher = faster response (0.25 is very snappy)
+    const lerpFactor = 0.25;
+
+    function animate() {
+        // Fast lerp for responsive feel
+        glowX += (mouseX - glowX) * lerpFactor;
+        glowY += (mouseY - glowY) * lerpFactor;
+
+        // Use transform for GPU acceleration
+        cursorGlow.style.transform = `translate(${glowX - 200}px, ${glowY - 200}px) translateZ(0)`;
+
+        animationId = requestAnimationFrame(animate);
+    }
+
+    function startAnimation() {
+        if (!animationId) {
+            animate();
+        }
+    }
+
+    function stopAnimation() {
+        if (animationId) {
+            cancelAnimationFrame(animationId);
+            animationId = null;
+        }
+    }
+
+    // Mouse move handler - update target position
+    document.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+
+        if (!isVisible) {
+            isVisible = true;
+            cursorGlow.classList.add('visible');
+            startAnimation();
+        }
+    }, { passive: true });
+
+    // Hide when mouse leaves the window
+    document.addEventListener('mouseleave', () => {
+        isVisible = false;
+        cursorGlow.classList.remove('visible');
+    });
+
+    // Show when mouse enters
+    document.addEventListener('mouseenter', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        glowX = mouseX;
+        glowY = mouseY;
+        isVisible = true;
+        cursorGlow.classList.add('visible');
+        startAnimation();
+    });
+
+    // Handle page visibility changes - pause when hidden
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            stopAnimation();
+        } else if (isVisible) {
+            startAnimation();
+        }
+    });
+
+    // Start animation immediately
+    startAnimation();
+}
 
 function initTabGlow() {
     const tabGroups = document.querySelectorAll('.mode-tabs');
