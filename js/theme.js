@@ -254,13 +254,20 @@ function initAudioFeedback() {
         return audioContext;
     }
 
-    // Enable audio on first user interaction
-    function enableAudio() {
+    // Enable audio and play click sound on first user interaction
+    function enableAudioAndPlayClick() {
         const ctx = getAudioContext();
         if (ctx && ctx.state === 'suspended') {
-            ctx.resume();
+            ctx.resume().then(() => {
+                isAudioEnabled = true;
+                // Play click sound immediately after enabling (force=true)
+                playClickSound(true);
+            });
+        } else {
+            isAudioEnabled = true;
+            // Context already running, play sound immediately
+            playClickSound(true);
         }
-        isAudioEnabled = true;
     }
 
     // Gentle hover sound - soft, high-pitched tick
@@ -279,8 +286,8 @@ function initAudioFeedback() {
             oscillator.frequency.setValueAtTime(1200, ctx.currentTime);
             oscillator.type = 'sine';
 
-            // Very quiet and short
-            gainNode.gain.setValueAtTime(0.03, ctx.currentTime);
+            // Subtle but audible
+            gainNode.gain.setValueAtTime(0.05, ctx.currentTime);
             gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
 
             oscillator.start(ctx.currentTime);
@@ -289,9 +296,10 @@ function initAudioFeedback() {
     }
 
     // Click sound - slightly deeper, satisfying click
-    function playClickSound() {
+    // force parameter allows first click to play before isAudioEnabled is set
+    function playClickSound(force = false) {
         const ctx = getAudioContext();
-        if (!ctx || !isAudioEnabled) return;
+        if (!ctx || (!isAudioEnabled && !force)) return;
 
         try {
             const oscillator = ctx.createOscillator();
@@ -305,8 +313,8 @@ function initAudioFeedback() {
             oscillator.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.1);
             oscillator.type = 'sine';
 
-            // Moderate volume, quick decay
-            gainNode.gain.setValueAtTime(0.08, ctx.currentTime);
+            // Moderate volume, satisfying decay
+            gainNode.gain.setValueAtTime(0.12, ctx.currentTime);
             gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
 
             oscillator.start(ctx.currentTime);
@@ -314,9 +322,9 @@ function initAudioFeedback() {
         } catch (e) { /* Silently fail */ }
     }
 
-    // Enable audio on first click/touch
-    document.addEventListener('click', enableAudio, { once: true });
-    document.addEventListener('touchstart', enableAudio, { once: true });
+    // Enable audio on first click/touch and play sound immediately
+    document.addEventListener('click', enableAudioAndPlayClick, { once: true });
+    document.addEventListener('touchstart', enableAudioAndPlayClick, { once: true });
 
     // Throttle hover sounds to prevent too many triggers
     let lastHoverTime = 0;
