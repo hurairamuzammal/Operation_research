@@ -238,7 +238,7 @@ function initTabGlow() {
 // AUDIO FEEDBACK - Gentle Hover & Click Sounds
 // =====================================================
 function initAudioFeedback() {
-    // Create audio context lazily (for browser autoplay policy)
+    // Audio context and state
     let audioContext = null;
     let isAudioEnabled = false;
 
@@ -254,21 +254,71 @@ function initAudioFeedback() {
         return audioContext;
     }
 
-    // Enable audio and play click sound on first user interaction
-    function enableAudioAndPlayClick() {
+    // === AUTO-ENABLE AUDIO ON PAGE LOAD ===
+    // Try to enable audio immediately and on first mouse movement
+    function tryEnableAudio() {
+        if (isAudioEnabled) return true;
+
+        const ctx = getAudioContext();
+        if (!ctx) return false;
+
+        // If already running, we're good!
+        if (ctx.state === 'running') {
+            isAudioEnabled = true;
+            return true;
+        }
+
+        // Try to resume (may work if user recently interacted with browser)
+        if (ctx.state === 'suspended') {
+            ctx.resume().then(() => {
+                if (ctx.state === 'running') {
+                    isAudioEnabled = true;
+                }
+            }).catch(() => { });
+        }
+
+        return isAudioEnabled;
+    }
+
+    // Try immediately on init
+    tryEnableAudio();
+
+    // Try on first mouse movement (very early user interaction)
+    const enableOnMouseMove = () => {
         const ctx = getAudioContext();
         if (ctx && ctx.state === 'suspended') {
             ctx.resume().then(() => {
                 isAudioEnabled = true;
-                // Play click sound immediately after enabling (force=true)
-                playClickSound(true);
             });
-        } else {
+        } else if (ctx && ctx.state === 'running') {
             isAudioEnabled = true;
-            // Context already running, play sound immediately
-            playClickSound(true);
         }
-    }
+        // Remove after first successful enable
+        if (isAudioEnabled) {
+            document.removeEventListener('mousemove', enableOnMouseMove);
+            document.removeEventListener('touchstart', enableOnTouch);
+            document.removeEventListener('scroll', enableOnMouseMove);
+        }
+    };
+
+    const enableOnTouch = () => {
+        const ctx = getAudioContext();
+        if (ctx && ctx.state === 'suspended') {
+            ctx.resume().then(() => {
+                isAudioEnabled = true;
+            });
+        } else if (ctx && ctx.state === 'running') {
+            isAudioEnabled = true;
+        }
+        document.removeEventListener('mousemove', enableOnMouseMove);
+        document.removeEventListener('touchstart', enableOnTouch);
+        document.removeEventListener('scroll', enableOnMouseMove);
+    };
+
+    // Listen for very early user interactions
+    document.addEventListener('mousemove', enableOnMouseMove, { passive: true });
+    document.addEventListener('touchstart', enableOnTouch, { passive: true });
+    document.addEventListener('scroll', enableOnMouseMove, { passive: true });
 
     // Gentle hover sound - soft, high-pitched tick
     function playHoverSound() {
@@ -296,10 +346,9 @@ function initAudioFeedback() {
     }
 
     // Click sound - slightly deeper, satisfying click
-    // force parameter allows first click to play before isAudioEnabled is set
-    function playClickSound(force = false) {
+    function playClickSound() {
         const ctx = getAudioContext();
-        if (!ctx || (!isAudioEnabled && !force)) return;
+        if (!ctx || !isAudioEnabled) return;
 
         try {
             const oscillator = ctx.createOscillator();
@@ -322,9 +371,25 @@ function initAudioFeedback() {
         } catch (e) { /* Silently fail */ }
     }
 
-    // Enable audio on first click/touch and play sound immediately
-    document.addEventListener('click', enableAudioAndPlayClick, { once: true });
-    document.addEventListener('touchstart', enableAudioAndPlayClick, { once: true });
+    // === FALLBACK: FIRST CLICK ACTIVATION ===
+    // In case mousemove didn't work, ensure click definitely enables audio
+    function enableAudioOnClick(e) {
+        if (isAudioEnabled) return;
+
+        const ctx = getAudioContext();
+        if (!ctx) return;
+
+        if (ctx.state === 'suspended') {
+            ctx.resume().then(() => {
+                isAudioEnabled = true;
+            });
+        } else {
+            isAudioEnabled = true;
+        }
+    }
+
+    // Add click listener as final fallback
+    document.addEventListener('click', enableAudioOnClick, { capture: true, passive: true });
 
     // Throttle hover sounds to prevent too many triggers
     let lastHoverTime = 0;
@@ -387,3 +452,4 @@ function initAudioFeedback() {
         }
     });
 }
+
