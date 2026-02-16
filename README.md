@@ -64,7 +64,7 @@ No special installation is required! This is a client-side web application that 
 
 ## Contributing
 
-Contributions are welcome! If you'd like to add a new visualizer or improve an existing one, please fork the repository and submit a pull request.
+Contributions are welcome! If you'd like to add a new visualizer or improve an existing one, please fork the repository and submit a pull request and I will merge it lets make it ultimate open-source project.
 
 ## License
 
